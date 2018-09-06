@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Nothing</title>
+<title>dk</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
 <style>
@@ -57,31 +57,35 @@
   .time-right {
       float: right;
       color: #aaa;
+      font-size: 8pt;
   }
 
   /* Style time text */
   .time-left {
       float: left;
       color: #999;
+      font-size: 8pt;
   }
 
   /* Style msg text */
   .msg-right {
       float: right;
       padding-left: 25px;
+      padding-bottom: 5px;
   }
 
   /* Style msg text */
   .msg-left {
       float: left;
       padding-right: 25px;
+      padding-bottom: 5px;
   }
 </style>
 </head>
 <body>
     <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
       <script>
-        var validated = false;
+        var validated ="0";
         var dk = "";
         var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey;
         var ans1 = false;
@@ -95,6 +99,7 @@
 
         var msgRef =  firebase.database().ref("mydb/devilchats/msg");
         var allMsgRef =  firebase.database().ref("mydb/devilchats/msg");
+        var validateMsgRef =  firebase.database().ref("mydb/devilchats/msg");
 
         var keyRef =  firebase.database().ref("mydb/devilchats/keys");
         keyRef.orderByKey().on("value", function(snapshot) {
@@ -108,6 +113,17 @@
             gkey = snapshot.child("gkey").val();
           }
         });
+
+        function normaliseString(str){
+          var returnStr = "";
+          for (var v of str) {
+            var asciiValue = v.charCodeAt(0);
+            if((asciiValue>=65 && asciiValue<=90) || (asciiValue>=97 && asciiValue<=122)){
+              returnStr = returnStr + v;
+            }
+          }
+          return returnStr;
+        }
 
         function validateFirstAnswer(pAnswer){
           try{
@@ -137,11 +153,26 @@
           return false;
         }
 
+        function validateMessages(){
+          try{
+            validateMsgRef.orderByChild("v").equalTo("0").once("value", function(snapshot) {
+              if(snapshot!=null){
+                snapshot.forEach(function(child){
+                  snapshot.ref.child(child.key).update({v:"1"}) ;
+                });
+              }
+              validateMsgRef.off();
+            });
+          }catch(err){
+            alert("error in validateMessages: " + err);
+          }
+        }
+
         function sendMsg(pMsg){
           try{
             var strTime = new Date().getTime();
             //var strMsg = '{"' + d.getTime() + '":{"dk":"d", "text":"' + pMsg + '"}}' 
-            var obj = {"dk":dk, "text":pMsg, "time":strTime};
+            var obj = {"dk":dk, "text":pMsg, "time":strTime, "v":validated};
             msgRef.child(strTime).set(obj);
             retrieveMessages();
           }catch(err){
@@ -158,17 +189,25 @@
               if(snapshot!=null){
                 snapshot.forEach(function(child){
                   var key = child.key;
+                  var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                  var msgDate = new Date(Number(key+"")).toLocaleDateString("en-US", options);
+                  //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
                   var msgDK = snapshot.child(key + "/dk").val();
-                  let div = document.createElement('div');
-                  if(msgDK===dk){
-                    div.className = "container";
-                    div.innerHTML = "<span class='msg-right'>" + snapshot.child(key + "/text").val() + "</span>";
-                  }else{
-                    div.className = "container darker";
-                    div.innerHTML = "<span class='msg-left'>" + snapshot.child(key + "/text").val() + "</span>";
-                  }
+                  var v = snapshot.child(key + "/v").val();
+                  if(v===validated){
+                    let div = document.createElement('div');
+                    if(msgDK===dk){
+                      div.className = "container";
+                      div.innerHTML = "<span class='msg-right'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                      div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span>";
+                    }else{
+                      div.className = "container darker";
+                      div.innerHTML = "<span class='msg-left'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                      div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
+                    }
 
-                  parentDiv.appendChild(div);
+                    parentDiv.appendChild(div);
+                  }
                 });
               }
 
@@ -191,12 +230,12 @@
 
         function doit_onkeypress(e){
           try{
-            var tmpDK = "";
             if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
-              if(!validated){
+              if(validated==="0"){
                 if(!ans1){
-                  tmpDK = validateFirstAnswer(e.target.value);
-                  if(tmpDK==="d" || tmpDK==="k"){
+                  dk = validateFirstAnswer(normaliseString(e.target.value));
+                  if(dk==="d" || dk==="k"){
+                    document.title = dk;
                     ans1 = true;
                     let parentDiv = document.getElementById('divchat');
                     parentDiv.innerHTML="";
@@ -229,8 +268,8 @@
                   }
                 }else{
                   if(validateSecondAnswer(e.target.value)){
-                    validated = true;
-                    dk = tmpDK;
+                    validated = "1";
+                    validateMessages();
                     retrieveMessages();
                   }else{
                     ans1 = false;
@@ -240,7 +279,7 @@
               }else{
                 sendMsg(e.target.value);
               }
-              //msg.value = null;
+              e.preventDefault();
             }
           }catch(err){
             alert(err);
