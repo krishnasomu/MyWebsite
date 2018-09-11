@@ -1,0 +1,12 @@
+<html>
+    <h1>Email verification</h1>
+    <body>
+        <form method="POST" action="https://us-central1-booming-cosine-188305.cloudfunctions.net/verifyEmail">
+            <label>Email address: </label>
+            <input type=text name='emailid'/><br>
+            <label>Verification Code: </label>
+            <input type=text name='verificationCode'/>
+            <input type="submit" name='verifyEmail' value='Send'>
+        </form>
+    </body>
+</html>
