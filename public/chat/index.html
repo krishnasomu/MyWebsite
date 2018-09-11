@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
+  <script>
+    var app = angular.module("chatApp", ["ngRoute"]);
+    app.config(function($routeProvider) {
+        $routeProvider
+        .when("/signup", {
+            templateUrl : "./signup.html",
+            controller: "SignUpController"
+        })
+        .when("/signin", {
+            templateUrl : "./signin.html",
+            controller: "SignInController"
+        });
+    });
+    app.controller("CommonController", function($scope) {
+      $scope.message = "Welcome to Chat";
+    });
+    app.controller("SignInController", function($scope) {
+      $scope.message = "Welcome to Sign in page";
+    });
+    app.controller("SignUpController", function($scope) {
+      $scope.message = "Welcome to Sign up page";
+    });
+  </script>
+    
+  <body ng-app="chatApp">
+
+    <h1 ng-app="chatApp" ng-controller="CommonController">{{message}}</h1>
+
+    <a href="#!signup">Sign up</a>
+    <br>
+    <a href="#!signin">Sign in</a>
+
+    <div ng-view></div>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta chrset="UTF 8">
+        <link rel="stylesheet" href="css/bootstrap.css"/>
+    </head>
+    <body ng-app="ChatApp">
+    <h1>Welcome to Chat</h1>
+    <script src="https://code.angularjs.org/1.6.9/angular.js"></script>
+    <script src="lib/angular.js"></script>
+    <script src="lib/bootstrap.js"></script>
+    <script src="lib/jquery-1.11.3.min.js"></script>
+
+    <script>
+        var app = angular.module('ChatApp',["ngRoute"]);
+
+        app.config(function($routeProvider){
+            $routeProvider.
+            when("/signin",{
+                template="<h1>sign in</h1>"
+            }).
+            when("/signup", {
+                templateUrl: "./signup.html",
+                controller: "SignUpController"
+            }).
+            otherwise ({
+                redirectTo: './signin'
+            });
+        });
+        app.controller("SignInController", function($scope) {
+            $scope.message = "Sign In Page";
+        });
+        app.controller("SignUpController",function($scope){
+            $scope.message = "Sign Up Page";
+        });
+    </script>
+        
+    <div ng-app="ChatApp">
+        <ul><li><a href="#!signup">Sign Up</a></li>
+            <li><a href="#!signin">Sign In</a></li>
+        </ul>
+        <div ng-view></div>
+        </div>
+    </body>
+</html>
