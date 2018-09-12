@@ -2,17 +2,14 @@
     <h1>{{message}}</h1>
     <body>
         <form method="POST" action="https://us-central1-booming-cosine-188305.cloudfunctions.net/sendEmail">
-            <input type="hidden" name='fromemailid' value='krishna@somu.co.in'>
-            <input type="hidden" name='subject' value='Chit-Chat verification code'>
-            <input type="hidden" name='body' value='Verification code is 1234'>
             <label>User Name: </label>
-            <input type=text name='username'/>
+            <input type=text name='username'/><br>
             <label>Password: </label>
-            <input type=text name='password'/>
+            <input type=text name='password'/><br>
             <label>Confirm Password: </label>
-            <input type=text name='confirmpassword'/>
+            <input type=text name='confirmpassword'/><br>
             <label>Give your email address: </label>
-            <input type=text name='toemailid'/>
+            <input type=text name='emailid'/><br>
             <input type="submit" name='sendEmail' value='Send'>
         </form>
     </body>
