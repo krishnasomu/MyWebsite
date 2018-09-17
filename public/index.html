@@ -11,16 +11,46 @@
        right: 0;
        position: fixed;
        z-index: 1000;
-    }
+  }
 	#divdesignedby {
        bottom: 0;
        right: 0;
        position: fixed;
        z-index: 1000;
-    }
+  }
+  #divphotos {
+      bottom: 350px;
+      right: 0;
+      position: fixed;
+      z-index: 1000;
+  }
 </style>
 </head>
 <body>
+    <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
+      };
+      firebase.initializeApp(config);
+
+      var photosRef =  firebase.database().ref("mydb/tmp");
+      photosRef.orderByKey().on("value", function(snapshot) {
+        if(snapshot!=null){
+          var strPhotos = snapshot.val();
+          var strImages = '';
+          let photosDiv = document.getElementById('divphotos');
+          photosDiv.innerHTML="";
+          var strPhoto = strPhotos.split(",");
+          for (var i = 0; i < strPhoto.length; i++){
+            strImages = strImages + "<img width='50' height='50' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/><br>";
+          }
+          photosDiv.innerHTML = strImages;
+        }
+      });
+    </script>
+
 <div id="wrapper">
   <h1>Our Family</h1>
   <div id="family"></div>
@@ -64,8 +94,11 @@
       </div>
       <div id="funtravel">
         <div id="divchat">
-			 <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
-			 <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"/>
+        <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
+        <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"></iframe>
+        <div id="divphotos">
+         <img src="https://www.somu.co.in/images/photos/1.jpg">
+        </div>
 		</div>
       </div>
     </div>
