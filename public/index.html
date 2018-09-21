@@ -23,6 +23,8 @@
       right: 0;
       position: fixed;
       z-index: 1000;
+      overflow-y: scroll;
+      max-height: 50%;
   }
 </style>
 </head>
@@ -44,7 +46,9 @@
           photosDiv.innerHTML="";
           var strPhoto = strPhotos.split(",");
           for (var i = 0; i < strPhoto.length; i++){
-            strImages = strImages + "<img width='50' height='50' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/><br>";
+            if(strPhoto[i].trim()!==''){
+              strImages = strImages + "<img width='50' height='50' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/><br>";
+            }
           }
           photosDiv.innerHTML = strImages;
         }
