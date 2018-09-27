@@ -29,14 +29,68 @@
 </style>
 </head>
 <body>
-    <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
+    <script src="https://www.somu.co.in/lib/detect.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
     <script>
       // Initialize Firebase
       var config = {
-        databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
+        apiKey: "AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8",
+        authDomain: "somu-website.firebaseapp.com",
+        databaseURL: "https://somu-website.firebaseio.com",
+        projectId: "somu-website",
+        storageBucket: "somu-website.appspot.com",
+        messagingSenderId: "176778291160"
       };
       firebase.initializeApp(config);
+    </script>
+    <script>
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        alert('readystate:' + this.readyState + '; status:' + this.status + '; statusText:' + this.statusText + '; responseText:' + this.responseText);
+          /*
+          alert('readystate:' + this.readyState);
+          alert('status:' + this.status);
+          alert(this.statusText);
+          alert(this.responseText);
+          */
+          if (this.readyState === 4 && this.status === 200) {
+              //document.getElementById("demo").innerHTML = this.responseText;
+              alert(this.responseText);
+          }
+        };
+      function sendMsgToBot(strProjectID, strSessionID, strQuery, strLangCode){
+        
+        try{
+          var addMessage = firebase.functions().httpsCallable('addMessage');
+          alert(1);
+          addMessage().then(function(result) {
+            // Read result of the Cloud Function.
+            alert(2);
+            var sanitizedMessage = result.data.text;
+            alert(sanitizedMessage);
+          }).catch(function(cloudFuncErr){
+            alert(err);
+          });
+        }catch(err){
+          alert(err);
+        }
+        
 
+        
+        //xhttp.open("POST", "https://us-central1-booming-cosine-188305.cloudfunctions.net/sendMessageToBot", true);
+        //xhttp.open("POST", "https://us-central1-somu-website.cloudfunctions.net/addMessage", true);
+        //xhttp.open("POST", "tmp.html", true);
+        //xhttp.setRequestHeader("Content-Type", "application/json");
+        //xhttp.setRequestHeader("my-header", "my header value");
+        //xhttp.withCredentials = true;
+        //xhttp.send();
+         
+      }
+    </script>
+    
+    <script>
       var photosRef =  firebase.database().ref("mydb/tmp");
       photosRef.orderByKey().on("value", function(snapshot) {
         if(snapshot!=null){
@@ -98,8 +152,12 @@
       </div>
       <div id="funtravel">
         <div id="divchat">
+            <input type="text" id="text_msg" name="text_msg">
+            <input type="button" id="send_msg" name="send_msg" value="send" onclick="sendMsgToBot('booming-cosine-188305','1234567890', text_msg.value,'en-US')">
         <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
+        <!--
         <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"></iframe>
+        -->
         <div id="divphotos">
          <img src="https://www.somu.co.in/images/photos/1.jpg">
         </div>

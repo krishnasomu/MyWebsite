@@ -8,9 +8,20 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "/",
         "destination": "/index.html"
+      },
+      {
+        "source": "/tmp", "function": "addMessage"
+      },
+      {
+        "source": "tmp.html", "function": "addMessage"
       }
+    ]
+  },
+  "functions": {
+    "predeploy": [
+      "npm --prefix ./functions run lint"
     ]
   }
 }
