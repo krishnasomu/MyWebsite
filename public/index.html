@@ -26,12 +26,90 @@
       overflow-y: scroll;
       max-height: 50%;
   }
+  #divtextbox {
+      bottom: 10px;
+      right: 0;
+      position: fixed;
+      z-index: 1000;
+    }
+  /* Chat containers */
+  .container {
+      border: 2px solid #dedede;
+      background-color: #f1f1f1;
+      border-radius: 5px;
+      max-width: 379px;
+      padding-left : 5px;
+      padding-right: 5px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      margin: 1px 0;
+  }
+
+  /* Darker chat container */
+  .darker {
+      border-color: #ccc;
+      background-color: #ddd;
+  }
+
+  /* Clear floats */
+  .container::after {
+      content: "";
+      clear: both;
+      display: table;
+  }
+
+  /* Style images */
+  .container img {
+      float: left;
+      max-width: 60px;
+      width: 100%;
+      margin-right: 20px;
+      border-radius: 50%;
+  }
+
+  /* Style the right image */
+  .container img.right {
+      float: right;
+      margin-left: 20px;
+      margin-right:0;
+  }
+
+  /* Style time text */
+  .time-right {
+      float: right;
+      color: #aaa;
+      font-size: 8pt;
+  }
+
+  /* Style time text */
+  .time-left {
+      float: left;
+      color: #999;
+      font-size: 8pt;
+  }
+
+  /* Style msg text */
+  .msg-right {
+      float: right;
+      padding-left: 25px;
+      padding-bottom: 5px;
+  }
+
+  /* Style msg text */
+  .msg-left {
+      float: left;
+      padding-right: 25px;
+      padding-bottom: 5px;
+  }
+
+  /* Style chat window */
+  .chat-window {
+      overflow-y: scroll;
+      max-height: 50%;
+  }
 </style>
 </head>
 <body>
-    <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
-    <script src="https://www.somu.co.in/lib/detect.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
     <script>
       // Initialize Firebase
@@ -46,38 +124,105 @@
       firebase.initializeApp(config);
     </script>
     <script>
+      /*
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         alert('readystate:' + this.readyState + '; status:' + this.status + '; statusText:' + this.statusText + '; responseText:' + this.responseText);
-          /*
-          alert('readystate:' + this.readyState);
-          alert('status:' + this.status);
-          alert(this.statusText);
-          alert(this.responseText);
-          */
           if (this.readyState === 4 && this.status === 200) {
               //document.getElementById("demo").innerHTML = this.responseText;
               alert(this.responseText);
           }
         };
-      function sendMsgToBot(strProjectID, strSessionID, strQuery, strLangCode){
-        
+      */
+
+      function doit_onkeypress(e){
         try{
-          var addMessage = firebase.functions().httpsCallable('addMessage');
-          alert(1);
-          addMessage().then(function(result) {
+          if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
+          sendMsgToBot('booming-cosine-188305','1234567890', e.target.value,'en-US')
+          let parentDiv = document.getElementById('divchat');
+            //if(validated==="0"){
+              //if(!ans1){
+                //dk = validateFirstAnswer(normaliseString(e.target.value));
+                //if(dk==="d" || dk==="k"){
+                  //document.title = dk;
+                  //ans1 = true;
+                  //let textDiv = document.getElementById('divtextbox');
+                  parentDiv.innerHTML="";
+
+                  let div = document.createElement('div');
+                  div.className = "container";
+                  div.innerHTML = "<span class='msg-right'>" + e.target.value + "</span>";
+                  parentDiv.appendChild(div);
+
+                  /*
+                  div = document.createElement('div');
+                  div.className = "container darker";
+                  div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
+                  parentDiv.appendChild(div);
+                  */
+
+                  //parentDiv.appendChild(textDiv);
+                  //document.getElementById("msg").focus();
+                  parentDiv.scrollTop = parentDiv.scrollHeight;
+
+                  /*
+                  let ta = document.createElement('textarea');
+                  ta.id = "msg";
+                  ta.rows="3";
+                  ta.cols = "53";
+                  ta.placeholder = "type here...";
+                  ta.setAttribute("onkeypress", "Javascript:doit_onkeypress(event)");
+                  ta.autofocus = true;
+
+                  parentDiv.appendChild(ta);
+                  document.getElementById("msg").text = "";
+                  document.getElementById("msg").focus();
+                  */
+
+                //}else{
+                //  sendMsg(e.target.value);
+                //}
+              //}else{
+              //  if(validateSecondAnswer(e.target.value)){
+              //    validated = "1";
+              //    validateMessages();
+              //    retrieveMessages();
+              //  }else{
+              //    ans1 = false;
+              //    sendMsg(e.target.value);
+              //  }
+              //}
+            //}else{
+            //  sendMsg(e.target.value);
+            //}
+            e.target.value = "";
+            e.preventDefault();
+          }
+        }catch(err){
+          alert(err);
+        }
+      }
+
+      function sendMsgToBot(strProjectID, strSessionID, strQuery, strLangCode){
+        try{
+          var cloudFunctionToSendMsgToBot = firebase.functions().httpsCallable('sendMsgToBot');
+          //alert(1);
+          cloudFunctionToSendMsgToBot(
+            {
+              projectId: strProjectID, 
+              sessionId: strSessionID, 
+              queries: strQuery, 
+              languageCode: strLangCode
+            }).then(function(result) {
             // Read result of the Cloud Function.
-            alert(2);
-            var sanitizedMessage = result.data.text;
-            alert(sanitizedMessage);
+            alert(JSON.stringify(result));
+            alert(result.data.fulfillmentText);
           }).catch(function(cloudFuncErr){
-            alert(err);
+            alert(cloudFuncErr);
           });
         }catch(err){
           alert(err);
         }
-        
-
         
         //xhttp.open("POST", "https://us-central1-booming-cosine-188305.cloudfunctions.net/sendMessageToBot", true);
         //xhttp.open("POST", "https://us-central1-somu-website.cloudfunctions.net/addMessage", true);
@@ -151,9 +296,16 @@
         </div>
       </div>
       <div id="funtravel">
-        <div id="divchat">
+        <div id="divchat" class="chat-window">
+        </div>
+        <div id="divtextbox">
+            <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)"></textarea>
+        </div>
+        <!----
+          <div id="divchat">
             <input type="text" id="text_msg" name="text_msg">
             <input type="button" id="send_msg" name="send_msg" value="send" onclick="sendMsgToBot('booming-cosine-188305','1234567890', text_msg.value,'en-US')">
+        -->
         <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
         <!--
         <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"></iframe>

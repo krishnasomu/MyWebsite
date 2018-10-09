@@ -28,7 +28,6 @@ function detectTextIntent(projectId, sessionId, queries, languageCode) {
 
   try{
     const dialogflow = require('dialogflow');
-    alert(1);
 
     // Instantiates a session client
     const sessionClient = new dialogflow.SessionsClient();
@@ -37,13 +36,11 @@ function detectTextIntent(projectId, sessionId, queries, languageCode) {
       return;
     }
   
-    alert(2);
     // The path to identify the agent that owns the created intent.
     const sessionPath = sessionClient.sessionPath(projectId, sessionId);
   
     let promise;
   
-    alert(3);
     // Detects the intent of the queries.
     for (const query of queries) {
       // The text query request.
