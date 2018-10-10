@@ -6,11 +6,24 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
 <style>
-	#divchat {
-       bottom: 10px;
-       right: 0;
-       position: fixed;
-       z-index: 1000;
+  #imgbox {
+      vertical-align : middle;
+      position : absolute;
+      border: 1px solid #999;
+      background : #FFFFFF; 
+      filter: Alpha(Opacity=100);
+      visibility : hidden;
+      height : 200px;
+      width : 200px;
+      z-index : 1001;
+      overflow : hidden;
+      text-align : center;
+  }
+  #divchat {
+    bottom: 61px;
+    right: 0;
+    position: fixed;
+    z-index: 1000;
   }
 	#divdesignedby {
        bottom: 0;
@@ -19,12 +32,13 @@
        z-index: 1000;
   }
   #divphotos {
-      bottom: 350px;
+      bottom: 400px;
       right: 0;
       position: fixed;
       z-index: 1000;
       overflow-y: scroll;
-      max-height: 50%;
+      max-height: 250px;
+      max-width: 295px;
   }
   #divtextbox {
       bottom: 10px;
@@ -37,7 +51,8 @@
       border: 2px solid #dedede;
       background-color: #f1f1f1;
       border-radius: 5px;
-      max-width: 379px;
+      max-width: 295px;
+      width: 295px;
       padding-left : 5px;
       padding-right: 5px;
       padding-top: 1px;
@@ -113,7 +128,21 @@
     <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
     <script>
       // Initialize Firebase
-      var config = {
+      //to generate an unique ID
+      function uniqueID(){
+        function chr4(){
+          return Math.random().toString(16).slice(-4);
+        }
+        return chr4() + chr4() +
+          '-' + chr4() +
+          '-' + chr4() +
+          '-' + chr4() +
+          '-' + chr4() + chr4() + chr4();
+      }
+
+      var strUniqueID = uniqueID();
+
+      var config_website = {
         apiKey: "AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8",
         authDomain: "somu-website.firebaseapp.com",
         databaseURL: "https://somu-website.firebaseio.com",
@@ -121,8 +150,49 @@
         storageBucket: "somu-website.appspot.com",
         messagingSenderId: "176778291160"
       };
-      firebase.initializeApp(config);
-    </script>
+
+      var config_mydb = {
+        apiKey: "AIzaSyBCBSDf6gQEtrpRU6zDnbQ5wlwjEfqYSew",
+        authDomain: "booming-cosine-188305.firebaseapp.com",
+        databaseURL: "https://booming-cosine-188305-1e6db.firebaseio.com",
+        projectId: "booming-cosine-188305",
+        storageBucket: "booming-cosine-188305.appspot.com",
+        messagingSenderId: "735150123528"
+      };
+
+      firebase.initializeApp(config_website);
+      var msgRef = null;
+      var allMsgRef = null;
+      var photosRef = null;
+      try{
+        msgRef =  firebase.database().ref("mydb/cutebotchats/" + strUniqueID);
+        allMsgRef =  firebase.database().ref("mydb/cutebotchats/" + strUniqueID);
+      }catch(err){
+        alert(err);
+      }
+      try{
+        var myDBApp = firebase.initializeApp(config_mydb, "other");
+        //firebase.initializeApp(config_mydb);
+        photosRef =  firebase.database(myDBApp).ref("mydb/displayphotos/" + strUniqueID);
+        photosRef.orderByKey().on("value", function(snapshot) {
+        if(snapshot!=null){
+          var strPhotos = snapshot.val();
+          var strImages = '';
+          let photosDiv = document.getElementById('divphotos');
+          photosDiv.innerHTML="";
+          var strPhoto = strPhotos.split(",");
+          for (var i = 0; i < strPhoto.length; i++){
+            if(strPhoto[i].trim()!==''){
+              strImages = strImages + "<img width='55' height='55' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/>";
+            }
+          }
+          photosDiv.innerHTML = strImages;
+        }
+      });
+      }catch(err){
+        alert(err);
+      }
+</script>
     <script>
       /*
       var xhttp = new XMLHttpRequest();
@@ -138,63 +208,8 @@
       function doit_onkeypress(e){
         try{
           if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
-          sendMsgToBot('booming-cosine-188305','1234567890', e.target.value,'en-US');
-          let parentDiv = document.getElementById('divchat');
-            //if(validated==="0"){
-              //if(!ans1){
-                //dk = validateFirstAnswer(normaliseString(e.target.value));
-                //if(dk==="d" || dk==="k"){
-                  //document.title = dk;
-                  //ans1 = true;
-                  //let textDiv = document.getElementById('divtextbox');
-                  parentDiv.innerHTML="";
-
-                  let div = document.createElement('div');
-                  div.className = "container";
-                  div.innerHTML = "<span class='msg-right'>" + e.target.value + "</span>";
-                  parentDiv.appendChild(div);
-
-                  /*
-                  div = document.createElement('div');
-                  div.className = "container darker";
-                  div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
-                  parentDiv.appendChild(div);
-                  */
-
-                  //parentDiv.appendChild(textDiv);
-                  //document.getElementById("msg").focus();
-                  parentDiv.scrollTop = parentDiv.scrollHeight;
-
-                  /*
-                  let ta = document.createElement('textarea');
-                  ta.id = "msg";
-                  ta.rows="3";
-                  ta.cols = "53";
-                  ta.placeholder = "type here...";
-                  ta.setAttribute("onkeypress", "Javascript:doit_onkeypress(event)");
-                  ta.autofocus = true;
-
-                  parentDiv.appendChild(ta);
-                  document.getElementById("msg").text = "";
-                  document.getElementById("msg").focus();
-                  */
-
-                //}else{
-                //  sendMsg(e.target.value);
-                //}
-              //}else{
-              //  if(validateSecondAnswer(e.target.value)){
-              //    validated = "1";
-              //    validateMessages();
-              //    retrieveMessages();
-              //  }else{
-              //    ans1 = false;
-              //    sendMsg(e.target.value);
-              //  }
-              //}
-            //}else{
-            //  sendMsg(e.target.value);
-            //}
+          sendMsgToBot('booming-cosine-188305',strUniqueID, e.target.value,'en-US');
+          insertMsg('u',e.target.value);
             e.target.value = "";
             e.preventDefault();
           }
@@ -203,10 +218,55 @@
         }
       }
 
+      function insertMsg(pBU,pMsg){
+        try{
+          var strTime = new Date().getTime();
+          var obj = {"bu":pBU, "text":pMsg, "time":strTime};
+          msgRef.child(strTime).set(obj);
+          retrieveMessages();
+        }catch(err){
+          alert("error in insertMsg: " + err);
+        }
+      }
+
+      function retrieveMessages(){
+        try{
+          allMsgRef.orderByChild("time").on("value", function(snapshot) {
+            let parentDiv = document.getElementById('divchat');
+            //let textDiv = document.getElementById('divtextbox');
+            parentDiv.innerHTML="";
+
+            if(snapshot!=null){
+              snapshot.forEach(function(child){
+                var key = child.key;
+                var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                var msgDate = new Date(Number(key+"")).toLocaleDateString("en-US", options);
+                //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
+                var msgBU = snapshot.child(key + "/bu").val();
+                let div = document.createElement('div');
+                if(msgBU==='u'){
+                  div.className = "container";
+                  div.innerHTML = "<span class='msg-right'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                  div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span>";
+                }else{
+                  div.className = "container darker";
+                  div.innerHTML = "<span class='msg-left'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                  div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
+                }
+                parentDiv.appendChild(div);
+                parentDiv.scrollTop = parentDiv.scrollHeight;
+              });
+            }
+          }
+          );
+        }catch(err){
+          alert(err);
+        }
+      }
+
       function sendMsgToBot(strProjectID, strSessionID, strQuery, strLangCode){
         try{
           var cloudFunctionToSendMsgToBot = firebase.functions().httpsCallable('sendMsgToBot');
-          //alert(1);
           cloudFunctionToSendMsgToBot(
             {
               projectId: strProjectID, 
@@ -215,8 +275,9 @@
               languageCode: strLangCode
             }).then(function(result) {
             // Read result of the Cloud Function.
-            alert(JSON.stringify(result));
-            alert(result.data.fulfillmentText);
+            //alert(JSON.stringify(result));
+            //alert(result.data.fulfillmentText);
+            insertMsg('b',result.data.fulfillmentText);
           }).catch(function(cloudFuncErr){
             alert(cloudFuncErr);
           });
@@ -235,25 +296,6 @@
       }
     </script>
     
-    <script>
-      var photosRef =  firebase.database().ref("mydb/tmp");
-      photosRef.orderByKey().on("value", function(snapshot) {
-        if(snapshot!=null){
-          var strPhotos = snapshot.val();
-          var strImages = '';
-          let photosDiv = document.getElementById('divphotos');
-          photosDiv.innerHTML="";
-          var strPhoto = strPhotos.split(",");
-          for (var i = 0; i < strPhoto.length; i++){
-            if(strPhoto[i].trim()!==''){
-              strImages = strImages + "<img width='50' height='50' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/><br>";
-            }
-          }
-          photosDiv.innerHTML = strImages;
-        }
-      });
-    </script>
-
 <div id="wrapper">
   <h1>Our Family</h1>
   <div id="family"></div>
@@ -268,6 +310,7 @@
     </ul>
     <div id="nav-bot"></div>
   </div>
+  <div id="imgbox"></div>
   <div id="body">
     <div class="i">
       <h2 class="shallow"><strong>Welcome</strong> to our family</h2>
@@ -297,35 +340,18 @@
       </div>
       <div id="wrapper">
           <div id="body">
+            <div id="divphotos">
+            </div>
             <div id="divchat" class="chat-window">
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
-                abcdefgh
             </div>
             <div id="divtextbox">
-                <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)"></textarea>
+                <textarea id="msg" rows="3" cols="43" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)"></textarea>
             </div>
           </div>
-        <!----
-          <div id="divchat">
-            <input type="text" id="text_msg" name="text_msg">
-            <input type="button" id="send_msg" name="send_msg" value="send" onclick="sendMsgToBot('booming-cosine-188305','1234567890', text_msg.value,'en-US')">
-        -->
         <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
         <!--
         <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"></iframe>
         -->
-        <div id="divphotos">
-         <!--<img src="https://www.somu.co.in/images/photos/1.jpg">-->
-        </div>
 		</div>
       </div>
     </div>

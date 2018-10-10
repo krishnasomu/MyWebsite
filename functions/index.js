@@ -69,7 +69,6 @@ exports.sendMsgToBot = functions.https.onCall((data, context) => {
   });
 });
 
-
 /////// FUNCTIONS //////
 
 function test(){
