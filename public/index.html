@@ -8,14 +8,17 @@
 <style>
   #imgbox {
       vertical-align : middle;
-      position : absolute;
-      border: 1px solid #999;
+      position : fixed;
+      top: 50%;
+      left: 50%;
+      border: 5px solid #999;
       background : #FFFFFF; 
       filter: Alpha(Opacity=100);
       visibility : hidden;
-      height : 200px;
-      width : 200px;
+      height : 600px;
+      width : 800px;
       z-index : 1001;
+      transform: translate(-50%, -50%);
       overflow : hidden;
       text-align : center;
   }
@@ -129,6 +132,13 @@
     <script>
       // Initialize Firebase
       //to generate an unique ID
+      document.onkeydown = function(evt) {
+        evt = evt || window.event;
+        if (evt.keyCode == 27) {
+          let imageDiv = document.getElementById('imgbox');
+          imageDiv.style.visibility = 'hidden';
+        }
+      };
       function uniqueID(){
         function chr4(){
           return Math.random().toString(16).slice(-4);
@@ -183,7 +193,7 @@
           var strPhoto = strPhotos.split(",");
           for (var i = 0; i < strPhoto.length; i++){
             if(strPhoto[i].trim()!==''){
-              strImages = strImages + "<img width='55' height='55' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg'/>";
+              strImages = strImages + "<img width='55' height='55' src='https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg' id='img" + strPhoto[i] + "' onclick=" + '"showImage(' +  "'" + "https://www.somu.co.in/images/photos/" + strPhoto[i] + ".jpg','img" + strPhoto[i] + "')" + '"/>';
             }
           }
           photosDiv.innerHTML = strImages;
@@ -194,17 +204,38 @@
       }
 </script>
     <script>
-      /*
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        alert('readystate:' + this.readyState + '; status:' + this.status + '; statusText:' + this.statusText + '; responseText:' + this.responseText);
-          if (this.readyState === 4 && this.status === 200) {
-              //document.getElementById("demo").innerHTML = this.responseText;
-              alert(this.responseText);
-          }
-        };
-      */
-
+      function showImage(pImg, pImgID){
+        var myImg = document.querySelector("#" + pImgID);
+        var realWidth = myImg.naturalWidth;
+        var realHeight = myImg.naturalHeight;
+        var orientation = 'h';
+        var displayWidth = 0;
+        var displayHeight = 0;
+        if(realWidth>realHeight){
+          orientation = 'h';
+        }else{
+          orientation = 'v';
+        }
+        if(orientation==='h'){
+          displayWidth = 800;
+          displayHeight = (800/realWidth) * realHeight;
+        }else{
+          displayHeight = 600;
+          displayWidth = (600/realHeight) * realWidth;
+        }
+        //alert('h:' + realHeight + '; w:' + realWidth + '; dh:' + displayHeight + '; dw:' + displayWidth + '; o:' + orientation);
+        let imageDiv = document.getElementById('imgbox');
+        imageDiv.innerHTML="";
+        imageDiv.innerHTML = "<img src='" + pImg + "' width='" + displayWidth + "px' height=' + " + displayHeight + "px' >";
+        imageDiv.style.visibility='visible';
+        if(orientation==='v'){
+          imageDiv.style.height = '600px';
+          imageDiv.style.width = displayWidth + 'px';
+        }else{
+          imageDiv.style.height = displayHeight + 'px';
+          imageDiv.style.width = '800px';
+        }
+      }
       function doit_onkeypress(e){
         try{
           if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
@@ -274,9 +305,6 @@
               queries: strQuery, 
               languageCode: strLangCode
             }).then(function(result) {
-            // Read result of the Cloud Function.
-            //alert(JSON.stringify(result));
-            //alert(result.data.fulfillmentText);
             insertMsg('b',result.data.fulfillmentText);
           }).catch(function(cloudFuncErr){
             alert(cloudFuncErr);
@@ -284,15 +312,6 @@
         }catch(err){
           alert(err);
         }
-        
-        //xhttp.open("POST", "https://us-central1-booming-cosine-188305.cloudfunctions.net/sendMessageToBot", true);
-        //xhttp.open("POST", "https://us-central1-somu-website.cloudfunctions.net/addMessage", true);
-        //xhttp.open("POST", "tmp.html", true);
-        //xhttp.setRequestHeader("Content-Type", "application/json");
-        //xhttp.setRequestHeader("my-header", "my header value");
-        //xhttp.withCredentials = true;
-        //xhttp.send();
-         
       }
     </script>
     
@@ -349,9 +368,6 @@
             </div>
           </div>
         <div id="divdesignedby">designed by <a href="mailto:krishnasomu@yahoo.com">krishna somu</a></div>
-        <!--
-        <iframe width="280" height="330" src="https://console.dialogflow.com/api-client/demo/embedded/d6eee622-edf2-404b-aa8d-ef0316d6af22"></iframe>
-        -->
 		</div>
       </div>
     </div>
