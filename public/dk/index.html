@@ -17,6 +17,15 @@
       position: fixed;
       z-index: 1000;
     }
+    #divrectangle {
+      bottom: 10px;
+      right: 0px;
+      width: 408px;
+      height: 10px;
+      position: fixed;
+      background-color: black;
+      z-index: 1000;
+    }
   /* Chat containers */
   .container {
       border: 2px solid #dedede;
@@ -68,9 +77,23 @@
   }
 
   /* Style time text */
+  .away-since {
+      float: right;
+      color: white;
+      font-size: 8pt;
+      margin-right:10px;
+  }
+
+  /* Style time text */
   .time-left {
       float: left;
       color: #999;
+      font-size: 8pt;
+  }
+
+  .seen-symbol {
+      float: left;
+      color:red;
       font-size: 8pt;
   }
 
@@ -100,6 +123,7 @@
     <script>
       var validated ="0";
       var dk = "";
+      var otherDK = "";
       var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
       var ans1 = false;
       var isHidden = false;
@@ -115,6 +139,7 @@
       var allMsgRef =  firebase.database().ref("mydb/devilchats/msg");
       var validateMsgRef =  firebase.database().ref("mydb/devilchats/msg");
       var statusRef = firebase.database().ref("mydb/devilchats/status");
+      var seenRef = null;
 
       var keyRef =  firebase.database().ref("mydb/devilchats/keys");
       keyRef.orderByKey().on("value", function(snapshot) {
@@ -132,25 +157,24 @@
 
       // Set up event handler to produce text for the window focus event
       
-      /*
+      
       window.addEventListener("focus", function(event) 
       { 
-        let divChat = document.getElementById("divchat");
-        divChat.hidden = true;
-        isHidden = true;
-        //alert('welcome');
+        if(validated==="1"){
+          let divChat = document.getElementById("divchat");
+          divChat.hidden = true;
+          isHidden = true;
+        }
       }, false);
-      */
-
       
       window.addEventListener("focusout", function(event) 
       { 
-        statusRef.child(dk).set("0");
+        statusRef.child(dk).set("0;" + new Date().getTime());
       }, false);
 
       window.addEventListener("unload", function(event) 
       { 
-        statusRef.child(dk).set("0");
+        statusRef.child(dk).set("0;" + new Date().getTime());
       }, false);
       
 
@@ -223,20 +247,16 @@
       function setStatus(){
         try{
           statusRef.orderByKey().on("value", function(snapshot) {
-            let parentDiv = document.getElementById('msg');
-            if(dk==="d"){
-              if(snapshot.child("k").val()==="0"){
-                parentDiv.style = "border:solid 1px red"; 
-              }else if(snapshot.child("k").val()==="1"){
-                parentDiv.style = "border:solid 1px green"; 
-              }
-            }
-            if(dk==="k"){
-              if(snapshot.child("d").val()==="0"){
-                parentDiv.style = "border:solid 1px red"; 
-              }else if(snapshot.child("d").val()==="1"){
-                parentDiv.style = "border:solid 1px green"; 
-              }
+            let statusDiv = document.getElementById('divrectangle');
+            let awaySinceSpan = document.getElementById('span-away-since');
+            if(snapshot.child(otherDK).val().substr(0,1)==="0"){
+              var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'};
+              var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2,13)+"")).toLocaleDateString("en-US", options);
+              awaySinceSpan.textContent = lastLogoutTime;
+              statusDiv.style = "background-color:red"; 
+            }else if(snapshot.child(otherDK).val()==="1"){
+              statusDiv.style = "background-color:green"; 
+              awaySinceSpan.textContent = "";
             }
           });
         }catch(err){
@@ -249,33 +269,10 @@
           setStatus();
           //alert(1);
           allMsgRef.orderByChild("time").on("value", onAllMsgValueChange);
-          //allMsgRef.orderByChild("time").off("value",onAllMsgValueChange);
-          //if(!isHidden){
-            //allMsgRef.orderByChild("time").once("value",updateSeen);
-          //}
-          //allMsgRef.orderByChild("time").on("value", onAllMsgValueChange);
         }catch(err){
           alert(err);
         }
       }
-
-      var updateSeen = function(snapshot) {
-        if(snapshot!=null){
-              snapshot.forEach(function(child){
-                var key = child.key;
-                var msgDK = snapshot.child(key + "/dk").val();
-                var v = snapshot.child(key + "/v").val();
-                var s = snapshot.child(key + "/s").val();
-                if(v===validated){
-                  if(msgDK!=dk){ //this user
-                    if(s===""){
-                        snapshot.ref.child(key).update({s:"**"}) ;
-                      }
-                  }
-                }
-              });
-            }
-      };
 
       var onAllMsgValueChange = function(snapshot) {
             //alert(2);
@@ -284,7 +281,7 @@
             parentDiv.innerHTML="";
 
             if(snapshot!=null){
-              snapshot.ref.off();
+              //snapshot.ref.off();
               snapshot.forEach(function(child){
                 var key = child.key;
                 var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -298,11 +295,8 @@
                   if(msgDK===dk){ //this user
                     div.className = "container";
                     div.innerHTML = "<span class='msg-right'>" + snapshot.child(key + "/text").val() + "</span><br>";
-                    div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + " " + s + "</span>";
+                    div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span><span class='seen-symbol'>  " + s + "</span>";
                   }else{ //other user
-                    //if(!isHidden){
-                      snapshot.ref.child(key).update({s:"**"}) ;
-                    //}
                     div.className = "container darker";
                     div.innerHTML = "<span class='msg-left'>" + snapshot.child(key + "/text").val() + "</span><br>";
                     div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
@@ -315,9 +309,23 @@
                 }
               });
             }
-            //snapshot.ref.orderByChild("time").on("value", onAllMsgValueChange);
-            //alert("is on");
+            if(!isHidden){
+              seenRef.once("value",updateSeen);
+            }
           };
+
+          var updateSeen = function(snapshot) {
+            if(snapshot!=null){
+              snapshot.forEach(function(child){
+                var key = child.key;
+                var tmpDK = snapshot.child(key + "/dk").val();
+                if(tmpDK==otherDK){
+                  snapshot.ref.child(key).update({s:"**"}) ;
+                }
+              });
+            }
+          };
+
 
       function doit_onkeypress(e){
         try{
@@ -327,6 +335,7 @@
               if(normaliseString(e.target.value)===okey){
                 parentDiv.hidden=false;
                 statusRef.child(dk).set("1");
+                retrieveMessages();
                 isHidden = false;
               }else{
                 //alert("welcome back !!!");
@@ -338,6 +347,11 @@
             if(validated==="0"){
               if(!ans1){
                 dk = validateFirstAnswer(normaliseString(e.target.value));
+                if(dk==="d"){
+                  otherDK = "k";
+                }else{
+                  otherDK = "d";
+                }
                 if(dk==="d" || dk==="k"){
                   document.title = dk;
                   ans1 = true;
@@ -378,6 +392,7 @@
               }else{
                 if(validateSecondAnswer(e.target.value)){
                   validated = "1";
+                  seenRef = firebase.database().ref("mydb/devilchats/msg").orderByChild('s').equalTo('');
                   statusRef.child(dk).set("1");
                   validateMessages();
                   retrieveMessages();
@@ -404,6 +419,7 @@
       <div id="divtextbox">
           <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)" style="border:solid 1px black;"></textarea>
       </div>
+      <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
   </div>
   </div>
 </body>
