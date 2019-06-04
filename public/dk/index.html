@@ -127,6 +127,8 @@
       var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
       var ans1 = false;
       var isHidden = false;
+      var dbpath = "mydb/devilchats";
+      var isTyping = false;
 
       // Initialize Firebase
       var config = {
@@ -135,13 +137,17 @@
       };
       firebase.initializeApp(config);
 
-      var msgRef =  firebase.database().ref("mydb/devilchats/msg");
-      var allMsgRef =  firebase.database().ref("mydb/devilchats/msg");
-      var validateMsgRef =  firebase.database().ref("mydb/devilchats/msg");
-      var statusRef = firebase.database().ref("mydb/devilchats/status");
+      var msgRef =  firebase.database().ref(dbpath + "/msg");
+      var allMsgRef =  firebase.database().ref(dbpath + "/msg");
+      var msgBackupRef = firebase.database().ref(dbpath + "/msgbkp");
+      var validateMsgRef =  firebase.database().ref(dbpath + "/msg");
+      var statusRef = firebase.database().ref(dbpath + "/status");
+      var myActionRef = firebase.database().ref(dbpath + "/action");
+      var otherActionRef = null;
+      
       var seenRef = null;
 
-      var keyRef =  firebase.database().ref("mydb/devilchats/keys");
+      var keyRef =  firebase.database().ref(dbpath + "/keys");
       keyRef.orderByKey().on("value", function(snapshot) {
         if(snapshot!=null){
           dkey1 = snapshot.child("dkey1").val();
@@ -235,9 +241,9 @@
       function sendMsg(pMsg){
         try{
           var strTime = new Date().getTime();
-          //var strMsg = '{"' + d.getTime() + '":{"dk":"d", "text":"' + pMsg + '"}}' 
           var obj = {"dk":dk, "text":pMsg, "time":strTime, "v":validated, "s":""};
           msgRef.child(strTime).set(obj);
+          msgBackupRef.child(strTime).set(obj);
           retrieveMessages();
         }catch(err){
           alert("error in sendMsg: " + err);
@@ -268,7 +274,7 @@
         try{
           setStatus();
           //alert(1);
-          allMsgRef.orderByChild("time").on("value", onAllMsgValueChange);
+          allMsgRef.orderByChild("time").limitToLast(30).on("value", onAllMsgValueChange);
         }catch(err){
           alert(err);
         }
@@ -292,14 +298,16 @@
                 var s = snapshot.child(key + "/s").val();
                 if(v===validated){
                   let div = document.createElement('div');
+                  var strMsg = snapshot.child(key + "/text").val();
                   if(msgDK===dk){ //this user
                     div.className = "container";
-                    div.innerHTML = "<span class='msg-right'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                    div.innerHTML = "<span class='msg-right'>" + strMsg + "</span><br>";
                     div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span><span class='seen-symbol'>  " + s + "</span>";
                   }else{ //other user
                     div.className = "container darker";
-                    div.innerHTML = "<span class='msg-left'>" + snapshot.child(key + "/text").val() + "</span><br>";
+                    div.innerHTML = "<span class='msg-left'>" + strMsg + "</span><br>";
                     div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
+                    div.onclick = function() {replyToThis(strMsg)};
                   }
 
                   parentDiv.appendChild(div);
@@ -326,11 +334,29 @@
             }
           };
 
+          var updateAction = function(snapshot) {
+            if(validated=="1" && !isHidden){
+              if(snapshot!=null){
+                if(snapshot.val()==='1'){
+                  change_status('yellow');
+                }else{
+                  change_status('green');
+                }
+              }
+            }
+          };
+
+      function replyToThis(pStrMsg){
+        let textMsg = document.getElementById('msg');
+        //alert(textMsg.);
+        textMsg.value = "[" + pStrMsg + "]-> ";
+        textMsg.focus();
+      }
 
       function doit_onkeypress(e){
         try{
           if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
-          let parentDiv = document.getElementById('divchat');
+            let parentDiv = document.getElementById('divchat');
             if(isHidden){
               if(normaliseString(e.target.value)===okey){
                 parentDiv.hidden=false;
@@ -368,23 +394,7 @@
                   div.className = "container darker";
                   div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
                   parentDiv.appendChild(div);
-                  //parentDiv.appendChild(textDiv);
-                  //document.getElementById("msg").focus();
                   parentDiv.scrollTop = parentDiv.scrollHeight;
-
-                  /*
-                  let ta = document.createElement('textarea');
-                  ta.id = "msg";
-                  ta.rows="3";
-                  ta.cols = "53";
-                  ta.placeholder = "type here...";
-                  ta.setAttribute("onkeypress", "Javascript:doit_onkeypress(event)");
-                  ta.autofocus = true;
-
-                  parentDiv.appendChild(ta);
-                  document.getElementById("msg").text = "";
-                  document.getElementById("msg").focus();
-                  */
 
                 }else{
                   sendMsg(e.target.value);
@@ -392,8 +402,9 @@
               }else{
                 if(validateSecondAnswer(e.target.value)){
                   validated = "1";
-                  seenRef = firebase.database().ref("mydb/devilchats/msg").orderByChild('s').equalTo('');
+                  seenRef = firebase.database().ref(dbpath + "/msg").orderByChild('s').equalTo('');
                   statusRef.child(dk).set("1");
+                  otherActionRef = firebase.database().ref(dbpath + "/action/" + otherDK).on("value", updateAction);;
                   validateMessages();
                   retrieveMessages();
                 }else{
@@ -411,13 +422,30 @@
           alert(err);
         }
       }
+
+      function doit_onkeyup(e){
+        if(validated=="1" && !isHidden){
+          myActionRef.child(dk).set("0");
+        }
+      }
+
+      function doit_onkeydown(e){
+        if(validated=="1" && !isHidden){
+          myActionRef.child(dk).set("1");
+        }
+      }
+
+      function change_status(strColor){
+        let statusDiv = document.getElementById('divrectangle');
+        statusDiv.style = "background-color:" + strColor;
+      }
   </script>
   <div id="wrapper">
     <div id="body">
       <div id="divchat" class="chat-window">
       </div>
       <div id="divtextbox">
-          <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)" style="border:solid 1px black;"></textarea>
+          <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)" onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
       </div>
       <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
   </div>
