@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>dk</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
+<style>
+    #divchat {
+      bottom: 61px;
+      right: 0;
+      position: fixed;
+      z-index: 1000;
+    }
+    #divtextbox {
+      bottom: 10px;
+      right: 0;
+      position: fixed;
+      z-index: 1000;
+    }
+    #divrectangle {
+      bottom: 10px;
+      right: 0px;
+      width: 408px;
+      height: 10px;
+      position: fixed;
+      background-color: black;
+      z-index: 1000;
+    }
+  /* Chat containers */
+  .container {
+      border: 2px solid #dedede;
+      background-color: #f1f1f1;
+      border-radius: 5px;
+      max-width: 379px;
+      width: 379px;
+      padding-left : 5px;
+      padding-right: 5px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      margin: 1px 0;
+  }
+
+  /* Darker chat container */
+  .darker {
+      border-color: #ccc;
+      background-color: #ddd;
+  }
+
+  /* Clear floats */
+  .container::after {
+      content: "";
+      clear: both;
+      display: table;
+  }
+
+  /* Style images */
+  .container img {
+      float: left;
+      max-width: 60px;
+      width: 100%;
+      margin-right: 20px;
+      border-radius: 50%;
+  }
+
+  /* Style the right image */
+  .container img.right {
+      float: right;
+      margin-left: 20px;
+      margin-right:0;
+  }
+
+  /* Style time text */
+  .time-right {
+      float: right;
+      color: #aaa;
+      font-size: 8pt;
+  }
+
+  /* Style time text */
+  .away-since {
+      float: right;
+      color: white;
+      font-size: 8pt;
+      margin-right:10px;
+  }
+
+  /* Style time text */
+  .time-left {
+      float: left;
+      color: #999;
+      font-size: 8pt;
+  }
+
+  .seen-symbol {
+      float: left;
+      color:red;
+      font-size: 8pt;
+  }
+
+  /* Style msg text */
+  .msg-right {
+      float: right;
+      padding-left: 25px;
+      padding-bottom: 5px;
+  }
+
+  /* Style msg text */
+  .msg-left {
+      float: left;
+      padding-right: 25px;
+      padding-bottom: 5px;
+  }
+
+  /* Style chat window */
+  .chat-window {
+      overflow-y: scroll;
+      max-height: 50%;
+  }
+</style>
+</head>
+<body>
+    <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+    <script>
+      var validated ="0";
+      var dk = "";
+      var otherDK = "";
+      var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
+      var ans1 = false;
+      var isHidden = false;
+      var dbpath = "mydb/devilchats";
+      var isTyping = false;
+
+      // Initialize Firebase
+      var config = {
+        //databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
+        databaseURL: 'https://somu-website.firebaseio.com/'
+      };
+      firebase.initializeApp(config);
+
+      var allMsgRef =  firebase.database().ref(dbpath + "/msg");
+      var keyRef =  firebase.database().ref(dbpath + "/keys");
+
+      keyRef.orderByKey().on("value", function(snapshot) {
+        if(snapshot!=null){
+          dkey1 = snapshot.child("dkey1").val();
+          dkey2 = snapshot.child("dkey2").val();
+          dkey3 = snapshot.child("dkey3").val();
+          kkey1 = snapshot.child("kkey1").val();
+          kkey2 = snapshot.child("kkey2").val();
+          kkey3 = snapshot.child("kkey3").val();
+          gkey = snapshot.child("gkey").val();
+          okey = snapshot.child("okey").val();
+        }
+      });
+
+      // Set up event handler to produce text for the window focus event
+      
+      
+      window.addEventListener("focus", function(event) 
+      { 
+        if(validated==="1"){
+          let divChat = document.getElementById("divchat");
+          divChat.hidden = true;
+          isHidden = true;
+        }
+      }, false);
+      
+      function normaliseString(str){
+        var returnStr = "";
+        for (var v of str) {
+          var asciiValue = v.charCodeAt(0);
+          if((asciiValue>=65 && asciiValue<=90) || (asciiValue>=97 && asciiValue<=122)){
+            returnStr = returnStr + v;
+          }
+        }
+        return returnStr;
+      }
+
+      function validateFirstAnswer(pAnswer){
+        try{
+          if(pAnswer===dkey1 || pAnswer===dkey2 || pAnswer===dkey3){
+            return "d";
+          }
+          if(pAnswer===kkey1 || pAnswer===kkey2 || pAnswer===kkey3){
+            return "k";
+          }
+        }catch(err){
+          alert(err);
+          return "";
+        }
+        return "";
+      }
+
+      function validateSecondAnswer(pAnswer){
+        try{
+          if(pAnswer===gkey){
+            return true;
+          }else{
+            return false;
+          }
+        }catch(err){
+          return false;
+        }
+        return false;
+      }
+
+      function retrieveMessages(){
+        try{
+          allMsgRef.orderByChild("time").limitToLast(100).once("value", onAllMsgValueChange);
+        }catch(err){
+          //alert(err);
+        }
+      }
+
+      var onAllMsgValueChange = function(snapshot) {
+            //alert(2);
+            let parentDiv = document.getElementById('divchat');
+            //let textDiv = document.getElementById('divtextbox');
+            parentDiv.innerHTML="";
+
+            if(snapshot!=null){
+              //snapshot.ref.off();
+              snapshot.forEach(function(child){
+                var key = child.key;
+                var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                var msgDate = new Date(Number(key+"")).toLocaleDateString("en-US", options);
+                //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
+                var msgDK = snapshot.child(key + "/dk").val();
+                var v = snapshot.child(key + "/v").val();
+                var s = snapshot.child(key + "/s").val();
+                if(v===validated){
+                  let div = document.createElement('div');
+                  var strMsg = snapshot.child(key + "/text").val();
+                  if(msgDK===dk){ //this user
+                    div.className = "container";
+                    div.innerHTML = "<span class='msg-right'>" + strMsg + "</span><br>";
+                    div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span><span class='seen-symbol'>  " + s + "</span>";
+                  }else{ //other user
+                    div.className = "container darker";
+                    div.innerHTML = "<span class='msg-left'>" + strMsg + "</span><br>";
+                    div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
+                  }
+
+                  parentDiv.appendChild(div);
+                  parentDiv.scrollTop = parentDiv.scrollHeight;
+                }
+              });
+            }
+            if(!isHidden){
+              seenRef.once("value",updateSeen);
+            }
+          };
+
+
+      function doit_onkeypress(e){
+        try{
+          if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
+            let parentDiv = document.getElementById('divchat');
+            if(isHidden){
+              if(normaliseString(e.target.value)===okey){
+                parentDiv.hidden=false;
+                retrieveMessages();
+                isHidden = false;
+              }else{
+                //alert("welcome back !!!");
+              }
+              e.target.value = "";
+              e.preventDefault();
+              return;
+            }
+            if(validated==="0"){
+              if(!ans1){
+                dk = validateFirstAnswer(normaliseString(e.target.value));
+                if(dk==="d"){
+                  otherDK = "k";
+                }else{
+                  otherDK = "d";
+                }
+                if(dk==="d" || dk==="k"){
+                  document.title = dk;
+                  ans1 = true;
+                  //let textDiv = document.getElementById('divtextbox');
+                  parentDiv.innerHTML="";
+
+                  let div = document.createElement('div');
+                  div.className = "container";
+                  div.innerHTML = "<span class='msg-right'>" + e.target.value + "</span>";
+                  parentDiv.appendChild(div);
+
+
+                  div = document.createElement('div');
+                  div.className = "container darker";
+                  div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
+                  parentDiv.appendChild(div);
+                  parentDiv.scrollTop = parentDiv.scrollHeight;
+
+                }else{
+                  //sendMsg(e.target.value);
+                }
+              }else{
+                if(validateSecondAnswer(e.target.value)){
+                  validated = "1";
+                  retrieveMessages();
+                }else{
+                  ans1 = false;
+                  //sendMsg(e.target.value);
+                }
+              }
+            }else{
+              //sendMsg(e.target.value);
+            }
+            e.target.value = "";
+            e.preventDefault();
+          }
+        }catch(err){
+          alert(err);
+        }
+      }
+
+  </script>
+  <div id="wrapper">
+    <div id="body">
+      <div id="divchat" class="chat-window">
+      </div>
+      <div id="divtextbox">
+          <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)" onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+      </div>
+      <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
+  </div>
+  </div>
+</body>
+</html>

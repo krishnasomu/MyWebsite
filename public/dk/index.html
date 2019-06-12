@@ -1,22 +1,25 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
 <head>
-<title>dk</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
-<style>
+  <title>dk</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
+  <style>
     #divchat {
       bottom: 61px;
       right: 0;
       position: fixed;
       z-index: 1000;
     }
+
     #divtextbox {
       bottom: 10px;
       right: 0;
       position: fixed;
       z-index: 1000;
     }
+
     #divrectangle {
       bottom: 10px;
       right: 0px;
@@ -26,429 +29,507 @@
       background-color: black;
       z-index: 1000;
     }
-  /* Chat containers */
-  .container {
+
+    /* Chat containers */
+    .container {
       border: 2px solid #dedede;
       background-color: #f1f1f1;
       border-radius: 5px;
       max-width: 379px;
       width: 379px;
-      padding-left : 5px;
+      padding-left: 5px;
       padding-right: 5px;
       padding-top: 1px;
       padding-bottom: 1px;
       margin: 1px 0;
-  }
+    }
 
-  /* Darker chat container */
-  .darker {
+    /* Darker chat container */
+    .darker {
       border-color: #ccc;
       background-color: #ddd;
-  }
+    }
 
-  /* Clear floats */
-  .container::after {
+    /* Clear floats */
+    .container::after {
       content: "";
       clear: both;
       display: table;
-  }
+    }
 
-  /* Style images */
-  .container img {
+    /* Style images */
+    .container img {
       float: left;
       max-width: 60px;
       width: 100%;
       margin-right: 20px;
       border-radius: 50%;
-  }
+    }
 
-  /* Style the right image */
-  .container img.right {
+    /* Style the right image */
+    .container img.right {
       float: right;
       margin-left: 20px;
-      margin-right:0;
-  }
+      margin-right: 0;
+    }
 
-  /* Style time text */
-  .time-right {
+    /* Style time text */
+    .time-right {
       float: right;
       color: #aaa;
       font-size: 8pt;
-  }
+    }
 
-  /* Style time text */
-  .away-since {
+    /* Style time text */
+    .away-since {
       float: right;
       color: white;
       font-size: 8pt;
-      margin-right:10px;
-  }
+      margin-right: 10px;
+    }
 
-  /* Style time text */
-  .time-left {
+    /* Style time text */
+    .time-left {
       float: left;
       color: #999;
       font-size: 8pt;
-  }
+    }
 
-  .seen-symbol {
+    .seen-symbol {
       float: left;
-      color:red;
+      color: red;
       font-size: 8pt;
-  }
+    }
 
-  /* Style msg text */
-  .msg-right {
+    /* Style msg text */
+    .msg-right {
       float: right;
       padding-left: 25px;
       padding-bottom: 5px;
-  }
+    }
 
-  /* Style msg text */
-  .msg-left {
+    /* Style msg text */
+    .msg-left {
       float: left;
       padding-right: 25px;
       padding-bottom: 5px;
-  }
+    }
 
-  /* Style chat window */
-  .chat-window {
+    /* Style chat window */
+    .chat-window {
       overflow-y: scroll;
       max-height: 50%;
-  }
-</style>
+    }
+  </style>
 </head>
+
 <body>
-    <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
-    <script>
-      var validated ="0";
-      var dk = "";
-      var otherDK = "";
-      var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
-      var ans1 = false;
-      var isHidden = false;
-      var dbpath = "mydb/devilchats";
-      var isTyping = false;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+  <script type="text/javascript">
+    var setLoginDetails = function () {
+      $.getJSON("http://www.geoplugin.net/json.gp?jsoncallback=?", function (data) {
+        var obj = { "ip": data.geoplugin_request, "city": data.geoplugin_city, "ua": navigator.userAgent };
+        loginRef.child(new Date().getTime()).set(obj);
+      });
+    };
 
-      // Initialize Firebase
-      var config = {
-        //databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
-        databaseURL: 'https://somu-website.firebaseio.com/'
-      };
-      firebase.initializeApp(config);
+    function successFunction(position) {
+      alrt(position);
+      alert(position.coords.lattitude);
+      alert(position.coords.longitude);
+    }
+    function failureFunction() {
+      alrt("failed");
+    }
+  </script>
+  <script>
+    var validated = "0";
+    var dk = "";
+    var otherDK = "";
+    var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
+    var ans1 = false;
+    var isHidden = false;
+    var dbpath = "mydb/devilchats";
+    var isTyping = false;
+    var isfunAddMessageCalled = false;
+    var intNoOfMsgsToDisplay = 100;
 
-      var msgRef =  firebase.database().ref(dbpath + "/msg");
-      var allMsgRef =  firebase.database().ref(dbpath + "/msg");
-      var msgBackupRef = firebase.database().ref(dbpath + "/msgbkp");
-      var validateMsgRef =  firebase.database().ref(dbpath + "/msg");
-      var statusRef = firebase.database().ref(dbpath + "/status");
-      var myActionRef = firebase.database().ref(dbpath + "/action");
-      var otherActionRef = null;
-      
-      var seenRef = null;
 
-      var keyRef =  firebase.database().ref(dbpath + "/keys");
-      keyRef.orderByKey().on("value", function(snapshot) {
-        if(snapshot!=null){
-          dkey1 = snapshot.child("dkey1").val();
-          dkey2 = snapshot.child("dkey2").val();
-          dkey3 = snapshot.child("dkey3").val();
-          kkey1 = snapshot.child("kkey1").val();
-          kkey2 = snapshot.child("kkey2").val();
-          kkey3 = snapshot.child("kkey3").val();
-          gkey = snapshot.child("gkey").val();
-          okey = snapshot.child("okey").val();
+    // Initialize Firebase
+    var config = {
+      //databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
+      databaseURL: 'https://somu-website.firebaseio.com/'
+    };
+    firebase.initializeApp(config);
+
+    var seenRef = null;
+    var otherActionRef = null;
+
+    var msgRef = firebase.database().ref(dbpath + "/msg");
+    var allMsgRef = firebase.database().ref(dbpath + "/msg");
+    var latestMsgRef = firebase.database().ref(dbpath + "/msg");
+    var msgBackupRef = firebase.database().ref(dbpath + "/msgbkp");
+    var validateMsgRef = firebase.database().ref(dbpath + "/msg");
+    var statusRef = firebase.database().ref(dbpath + "/status");
+    var myActionRef = firebase.database().ref(dbpath + "/action");
+    var keyRef = firebase.database().ref(dbpath + "/keys");
+    var loginRef = firebase.database().ref(dbpath + "/login");
+
+    keyRef.orderByKey().on("value", function (snapshot) {
+      if (snapshot != null) {
+        dkey1 = snapshot.child("dkey1").val();
+        dkey2 = snapshot.child("dkey2").val();
+        dkey3 = snapshot.child("dkey3").val();
+        kkey1 = snapshot.child("kkey1").val();
+        kkey2 = snapshot.child("kkey2").val();
+        kkey3 = snapshot.child("kkey3").val();
+        gkey = snapshot.child("gkey").val();
+        okey = snapshot.child("okey").val();
+      }
+    });
+
+    // Set up event handler to produce text for the window focus event
+
+    //  all msg ref callback function
+
+    var allMsgRefChildAdded = function (snapshot) {
+      var strKey = "";
+      snapshot.forEach(function (child) {
+        strKey.concat(child.key);
+      });
+      let textMsg = document.getElementById('msg');
+      textMsg.value = strKey;
+    };
+    //allMsgRef.on("child_added", allMsgRefChildAdded);
+
+    function ShowMessages(snapshot, isToBeAdded){
+      let parentDiv = document.getElementById('divchat');
+      if(!isToBeAdded){
+        parentDiv.innerHTML = "";
+      }
+      snapshot.forEach(function (child) {
+        var key = child.key;
+        var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        var msgDate = new Date(Number(key + "")).toLocaleDateString("en-US", options);
+        //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
+        var msgDK = snapshot.child(key + "/dk").val();
+        var v = snapshot.child(key + "/v").val();
+        var s = snapshot.child(key + "/s").val();
+        if (v === validated) {
+          let div = document.createElement('div');
+          var strMsg = snapshot.child(key + "/text").val();
+          if (msgDK === dk) { //this user
+            div.className = "container";
+            div.id = key;
+            if(isToBeAdded){
+              div.innerHTML = div.innerHTML + "<span class='msg-right'>" + strMsg + "</span><br>";
+            }else{
+              div.innerHTML = "<span class='msg-right'>" + strMsg + "</span><br>";
+            }
+            div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span><span class='seen-symbol'>  " + s + "</span>";
+          } else { //other user
+            div.className = "container darker";
+            if(isToBeAdded){
+              div.innerHTML = div.innerHTML + "<span class='msg-left'>" + strMsg + "</span><br>";
+            }else{
+              div.innerHTML = "<span class='msg-left'>" + strMsg + "</span><br>";
+            }
+            div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
+            div.onclick = function () { replyToThis(strMsg) };
+          }
+
+          parentDiv.appendChild(div);
+          parentDiv.scrollTop = parentDiv.scrollHeight;
         }
       });
-
-      // Set up event handler to produce text for the window focus event
-      
-      
-      window.addEventListener("focus", function(event) 
-      { 
-        if(validated==="1"){
-          let divChat = document.getElementById("divchat");
-          divChat.hidden = true;
-          isHidden = true;
-        }
-      }, false);
-      
-      window.addEventListener("focusout", function(event) 
-      { 
-        statusRef.child(dk).set("0;" + new Date().getTime());
-      }, false);
-
-      window.addEventListener("unload", function(event) 
-      { 
-        statusRef.child(dk).set("0;" + new Date().getTime());
-      }, false);
-      
-
-      function normaliseString(str){
-        var returnStr = "";
-        for (var v of str) {
-          var asciiValue = v.charCodeAt(0);
-          if((asciiValue>=65 && asciiValue<=90) || (asciiValue>=97 && asciiValue<=122)){
-            returnStr = returnStr + v;
-          }
-        }
-        return returnStr;
+      if (!isHidden) {
+        //seenRef.once("value", updateSeen);
       }
+    }
 
-      function validateFirstAnswer(pAnswer){
-        try{
-          if(pAnswer===dkey1 || pAnswer===dkey2 || pAnswer===dkey3){
-            return "d";
-          }
-          if(pAnswer===kkey1 || pAnswer===kkey2 || pAnswer===kkey3){
-            return "k";
-          }
-        }catch(err){
-          alert(err);
-          return "";
+    var funAddMessage = function (snapshot) {
+      if (snapshot != null) {
+        ShowMessages(snapshot,true);
+      }
+    };
+
+    var funDisplayAllMessages = function (snapshot) {
+      if (snapshot != null) {
+        ShowMessages(snapshot,false);
+      }
+    };
+
+    var funDeleteMessage = function (snapshot) {
+      if (snapshot != null) {
+        let msgDiv = document.getElementById(snapshot.key);
+        msgDiv.parentNode.removeChild(msgDiv);
+      }
+    };
+
+    try {
+      statusRef.orderByKey().on("value", function (snapshot) {
+        let statusDiv = document.getElementById('divrectangle');
+        let awaySinceSpan = document.getElementById('span-away-since');
+        if (validated != '1') {
+          //statusDiv.hidden = true;
         }
+        if (snapshot.child(otherDK).val().substr(0, 1) === "0") {
+          var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+          var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2, 13) + "")).toLocaleDateString("en-US", options);
+          awaySinceSpan.textContent = lastLogoutTime;
+          statusDiv.style = "background-color:red";
+        } else if (snapshot.child(otherDK).val() === "1") {
+          statusDiv.style = "background-color:green";
+          awaySinceSpan.textContent = "";
+        }
+      });
+    } catch (err) {
+      alert("statusRef:" + err);
+    }
+
+    window.addEventListener("focus", function (event) {
+      if (validated === "1") {
+        let divChat = document.getElementById("divchat");
+        divChat.hidden = true;
+        isHidden = true;
+      }
+    }, false);
+
+    window.addEventListener("focusout", function (event) {
+      statusRef.child(dk).set("0;" + new Date().getTime());
+    }, false);
+
+    window.addEventListener("unload", function (event) {
+      statusRef.child(dk).set("0;" + new Date().getTime());
+    }, false);
+
+
+    function normaliseString(str) {
+      var returnStr = "";
+      for (var v of str) {
+        var asciiValue = v.charCodeAt(0);
+        if ((asciiValue >= 65 && asciiValue <= 90) || (asciiValue >= 97 && asciiValue <= 122)) {
+          returnStr = returnStr + v;
+        }
+      }
+      return returnStr;
+    }
+
+    function validateFirstAnswer(pAnswer) {
+      try {
+        if (pAnswer === dkey1 || pAnswer === dkey2 || pAnswer === dkey3) {
+          return "d";
+        }
+        if (pAnswer === kkey1 || pAnswer === kkey2 || pAnswer === kkey3) {
+          return "k";
+        }
+      } catch (err) {
+        alert(err);
         return "";
       }
+      return "";
+    }
 
-      function validateSecondAnswer(pAnswer){
-        try{
-          if(pAnswer===gkey){
-            return true;
-          }else{
-            return false;
-          }
-        }catch(err){
+    function validateSecondAnswer(pAnswer) {
+      try {
+        if (pAnswer === gkey) {
+          return true;
+        } else {
           return false;
         }
+      } catch (err) {
         return false;
       }
+      return false;
+    }
 
-      function validateMessages(){
-        try{
-          validateMsgRef.orderByChild("v").equalTo("0").once("value", function(snapshot) {
-            if(snapshot!=null){
-              snapshot.forEach(function(child){
-                snapshot.ref.child(child.key).update({v:"1"}) ;
-              });
-            }
-            validateMsgRef.off();
-          });
-        }catch(err){
-          alert("error in validateMessages: " + err);
+    function validateMessages() {
+      try {
+        validateMsgRef.orderByChild("v").equalTo("0").once("value", function (snapshot) {
+          if (snapshot != null) {
+            snapshot.forEach(function (child) {
+              snapshot.ref.child(child.key).update({ v: "1" });
+            });
+          }
+          validateMsgRef.off();
+        });
+      } catch (err) {
+        alert("error in validateMessages: " + err);
+      }
+    }
+
+    function sendMsg(pMsg) {
+      try {
+        var strTime = new Date().getTime();
+        var obj = { "dk": dk, "text": pMsg, "v": validated, "s": "" };
+        msgRef.child(strTime).set(obj);
+        //msgBackupRef.child(strTime).set(obj);
+        if(!isfunAddMessageCalled && validated==='1'){
+          latestMsgRef.endAt().limitToLast(1).on("value", funAddMessage);
+          latestMsgRef.on("child_removed", funDeleteMessage);
+          isfunAddMessageCalled = true;
+        }
+      } catch (err) {
+        alert("error in sendMsg: " + err);
+      }
+    }
+
+    function setStatus() {
+      try {
+        statusRef.orderByKey().on("value", function (snapshot) {
+          let statusDiv = document.getElementById('divrectangle');
+          let awaySinceSpan = document.getElementById('span-away-since');
+          if (snapshot.child(otherDK).val().substr(0, 1) === "0") {
+            var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2, 13) + "")).toLocaleDateString("en-US", options);
+            awaySinceSpan.textContent = lastLogoutTime;
+            statusDiv.style = "background-color:red";
+          } else if (snapshot.child(otherDK).val() === "1") {
+            statusDiv.style = "background-color:green";
+            awaySinceSpan.textContent = "";
+          }
+        });
+      } catch (err) {
+        alert(err);
+      }
+    }
+
+    var updateSeen = function (snapshot) {
+      if (snapshot != null) {
+        snapshot.forEach(function (child) {
+          var key = child.key;
+          var tmpDK = snapshot.child(key + "/dk").val();
+          if (tmpDK == otherDK) {
+            snapshot.ref.child(key).update({ s: "*" });
+          }
+        });
+      }
+    };
+
+    var updateAction = function (snapshot) {
+      if (validated == "1" && !isHidden) {
+        if (snapshot != null) {
+          if (snapshot.val() === '1') {
+            change_status('yellow');
+          } else {
+            change_status('green');
+          }
         }
       }
+    };
 
-      function sendMsg(pMsg){
-        try{
-          var strTime = new Date().getTime();
-          var obj = {"dk":dk, "text":pMsg, "time":strTime, "v":validated, "s":""};
-          msgRef.child(strTime).set(obj);
-          msgBackupRef.child(strTime).set(obj);
-          retrieveMessages();
-        }catch(err){
-          alert("error in sendMsg: " + err);
-        }
-      }
+    function replyToThis(pStrMsg) {
+      let textMsg = document.getElementById('msg');
+      //alert(textMsg.);
+      textMsg.value = "[" + pStrMsg + "]->" + textMsg.value;
+      textMsg.focus();
+    }
 
-      function setStatus(){
-        try{
-          statusRef.orderByKey().on("value", function(snapshot) {
-            let statusDiv = document.getElementById('divrectangle');
-            let awaySinceSpan = document.getElementById('span-away-since');
-            if(snapshot.child(otherDK).val().substr(0,1)==="0"){
-              var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'};
-              var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2,13)+"")).toLocaleDateString("en-US", options);
-              awaySinceSpan.textContent = lastLogoutTime;
-              statusDiv.style = "background-color:red"; 
-            }else if(snapshot.child(otherDK).val()==="1"){
-              statusDiv.style = "background-color:green"; 
-              awaySinceSpan.textContent = "";
-            }
-          });
-        }catch(err){
-          alert(err);
-        }
-      }
-
-      function retrieveMessages(){
-        try{
-          setStatus();
-          //alert(1);
-          allMsgRef.orderByChild("time").limitToLast(30).on("value", onAllMsgValueChange);
-        }catch(err){
-          alert(err);
-        }
-      }
-
-      var onAllMsgValueChange = function(snapshot) {
-            //alert(2);
-            let parentDiv = document.getElementById('divchat');
-            //let textDiv = document.getElementById('divtextbox');
-            parentDiv.innerHTML="";
-
-            if(snapshot!=null){
-              //snapshot.ref.off();
-              snapshot.forEach(function(child){
-                var key = child.key;
-                var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-                var msgDate = new Date(Number(key+"")).toLocaleDateString("en-US", options);
-                //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
-                var msgDK = snapshot.child(key + "/dk").val();
-                var v = snapshot.child(key + "/v").val();
-                var s = snapshot.child(key + "/s").val();
-                if(v===validated){
-                  let div = document.createElement('div');
-                  var strMsg = snapshot.child(key + "/text").val();
-                  if(msgDK===dk){ //this user
-                    div.className = "container";
-                    div.innerHTML = "<span class='msg-right'>" + strMsg + "</span><br>";
-                    div.innerHTML = div.innerHTML + "<span class='time-left'>" + msgDate + "</span><span class='seen-symbol'>  " + s + "</span>";
-                  }else{ //other user
-                    div.className = "container darker";
-                    div.innerHTML = "<span class='msg-left'>" + strMsg + "</span><br>";
-                    div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
-                    div.onclick = function() {replyToThis(strMsg)};
-                  }
-
-                  parentDiv.appendChild(div);
-                  //parentDiv.appendChild(textDiv);
-                  //document.getElementById("msg").focus();
-                  parentDiv.scrollTop = parentDiv.scrollHeight;
-                }
-              });
-            }
-            if(!isHidden){
-              seenRef.once("value",updateSeen);
-            }
-          };
-
-          var updateSeen = function(snapshot) {
-            if(snapshot!=null){
-              snapshot.forEach(function(child){
-                var key = child.key;
-                var tmpDK = snapshot.child(key + "/dk").val();
-                if(tmpDK==otherDK){
-                  snapshot.ref.child(key).update({s:"**"}) ;
-                }
-              });
-            }
-          };
-
-          var updateAction = function(snapshot) {
-            if(validated=="1" && !isHidden){
-              if(snapshot!=null){
-                if(snapshot.val()==='1'){
-                  change_status('yellow');
-                }else{
-                  change_status('green');
-                }
-              }
-            }
-          };
-
-      function replyToThis(pStrMsg){
-        let textMsg = document.getElementById('msg');
-        //alert(textMsg.);
-        textMsg.value = "[" + pStrMsg + "]-> ";
-        textMsg.focus();
-      }
-
-      function doit_onkeypress(e){
-        try{
-          if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
-            let parentDiv = document.getElementById('divchat');
-            if(isHidden){
-              if(normaliseString(e.target.value)===okey){
-                parentDiv.hidden=false;
-                statusRef.child(dk).set("1");
-                retrieveMessages();
-                isHidden = false;
-              }else{
-                //alert("welcome back !!!");
-              }
-              e.target.value = "";
-              e.preventDefault();
-              return;
-            }
-            if(validated==="0"){
-              if(!ans1){
-                dk = validateFirstAnswer(normaliseString(e.target.value));
-                if(dk==="d"){
-                  otherDK = "k";
-                }else{
-                  otherDK = "d";
-                }
-                if(dk==="d" || dk==="k"){
-                  document.title = dk;
-                  ans1 = true;
-                  //let textDiv = document.getElementById('divtextbox');
-                  parentDiv.innerHTML="";
-
-                  let div = document.createElement('div');
-                  div.className = "container";
-                  div.innerHTML = "<span class='msg-right'>" + e.target.value + "</span>";
-                  parentDiv.appendChild(div);
-
-
-                  div = document.createElement('div');
-                  div.className = "container darker";
-                  div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
-                  parentDiv.appendChild(div);
-                  parentDiv.scrollTop = parentDiv.scrollHeight;
-
-                }else{
-                  sendMsg(e.target.value);
-                }
-              }else{
-                if(validateSecondAnswer(e.target.value)){
-                  validated = "1";
-                  seenRef = firebase.database().ref(dbpath + "/msg").orderByChild('s').equalTo('');
-                  statusRef.child(dk).set("1");
-                  otherActionRef = firebase.database().ref(dbpath + "/action/" + otherDK).on("value", updateAction);;
-                  validateMessages();
-                  retrieveMessages();
-                }else{
-                  ans1 = false;
-                  sendMsg(e.target.value);
-                }
-              }
-            }else{
-              sendMsg(e.target.value);
+    function doit_onkeypress(e) {
+      try {
+        if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
+          let parentDiv = document.getElementById('divchat');
+          if (isHidden) {
+            if (normaliseString(e.target.value) === okey) {
+              parentDiv.hidden = false;
+              statusRef.child(dk).set("1");
+              let statusDiv = document.getElementById('divrectangle');
+              statusDiv.hidden = false;
+              isHidden = false;
+            } else {
+              //alert("welcome back !!!");
             }
             e.target.value = "";
             e.preventDefault();
+            return;
           }
-        }catch(err){
-          alert(err);
-        }
-      }
+          if (validated === "0") {
+            if (!ans1) {
+              dk = validateFirstAnswer(normaliseString(e.target.value));
+              if (dk === "d") {
+                otherDK = "k";
+              } else {
+                otherDK = "d";
+              }
+              if (dk === "d" || dk === "k") {
+                document.title = dk;
+                ans1 = true;
+                //let textDiv = document.getElementById('divtextbox');
+                parentDiv.innerHTML = "";
 
-      function doit_onkeyup(e){
-        if(validated=="1" && !isHidden){
-          myActionRef.child(dk).set("0");
-        }
-      }
+                let div = document.createElement('div');
+                div.className = "container";
+                div.innerHTML = "<span class='msg-right'>" + e.target.value + "</span>";
+                parentDiv.appendChild(div);
 
-      function doit_onkeydown(e){
-        if(validated=="1" && !isHidden){
-          myActionRef.child(dk).set("1");
-        }
-      }
 
-      function change_status(strColor){
-        let statusDiv = document.getElementById('divrectangle');
-        statusDiv.style = "background-color:" + strColor;
+                div = document.createElement('div');
+                div.className = "container darker";
+                div.innerHTML = "<span class='msg-left'>" + "is it ?" + "</span>";
+                parentDiv.appendChild(div);
+                parentDiv.scrollTop = parentDiv.scrollHeight;
+
+              } else {
+                sendMsg(e.target.value);
+              }
+            } else {
+              if (validateSecondAnswer(e.target.value)) {
+                validated = "1";
+                if (dk === 'd') {
+                  setLoginDetails();
+                }
+                seenRef = firebase.database().ref(dbpath + "/msg").orderByChild('s').equalTo('');
+                statusRef.child(dk).set("1");
+                otherActionRef = firebase.database().ref(dbpath + "/action/" + otherDK).on("value", updateAction);;
+                validateMessages();
+                allMsgRef.limitToLast(intNoOfMsgsToDisplay).once("value", funDisplayAllMessages);
+                //retrieveMessages();
+              } else {
+                ans1 = false;
+                sendMsg(e.target.value);
+              }
+            }
+          } else {
+            sendMsg(e.target.value);
+          }
+          e.target.value = "";
+          e.preventDefault();
+        }
+      } catch (err) {
+        alert(err);
       }
+    }
+
+    function doit_onkeyup(e) {
+      if (validated == "1" && !isHidden) {
+        myActionRef.child(dk).set("0");
+      }
+    }
+
+    function doit_onkeydown(e) {
+      if (validated == "1" && !isHidden) {
+        myActionRef.child(dk).set("1");
+      }
+    }
+
+    function change_status(strColor) {
+      let statusDiv = document.getElementById('divrectangle');
+      statusDiv.style = "background-color:" + strColor;
+    }
   </script>
   <div id="wrapper">
     <div id="body">
       <div id="divchat" class="chat-window">
       </div>
       <div id="divtextbox">
-          <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..." onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)" onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+        <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..."
+          onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
+          onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
       </div>
       <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
-  </div>
+    </div>
   </div>
 </body>
+
 </html>
