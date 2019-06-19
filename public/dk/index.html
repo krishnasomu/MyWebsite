@@ -150,11 +150,14 @@
     var dkey1, dkey2, dkey3, kkey1, kkey2, kkey3, gkey, okey;
     var ans1 = false;
     var isHidden = false;
-    var dbpath = "mydb/devilchats";
     var isTyping = false;
     var isfunAddMessageCalled = false;
-    var intNoOfMsgsToDisplay = 100;
+    var intNoOfMsgsToDisplay = 30;
+    var lastTimeStamp = 0;
 
+    //Test variables
+    var dbpath = "mydb/devilchats";
+    var hideOnFocusOut = true;
 
     // Initialize Firebase
     var config = {
@@ -189,36 +192,25 @@
       }
     });
 
-    // Set up event handler to produce text for the window focus event
-
-    //  all msg ref callback function
-
-    var allMsgRefChildAdded = function (snapshot) {
-      var strKey = "";
-      snapshot.forEach(function (child) {
-        strKey.concat(child.key);
-      });
-      let textMsg = document.getElementById('msg');
-      textMsg.value = strKey;
-    };
-    //allMsgRef.on("child_added", allMsgRefChildAdded);
-
     function ShowMessages(snapshot, isToBeAdded){
-      let parentDiv = document.getElementById('divchat');
-      if(!isToBeAdded){
-        parentDiv.innerHTML = "";
-      }
-      snapshot.forEach(function (child) {
-        var key = child.key;
+      try{
+        //alert(snapshot.key)
+        let parentDiv = document.getElementById('divchat');
+        if(isToBeAdded){
+            //alert(snapshot.key);
+        }
+        var key = snapshot.key;
+        //alert(key);
+        lastTimeStamp = key+1;
         var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         var msgDate = new Date(Number(key + "")).toLocaleDateString("en-US", options);
         //var strDate = msgDate.getHours() + ":" + msgDate.getMinutes() + ":" + msgDate.getSeconds() + " " + msgDate.get .getMonth() + " " + msgDate.getDate() + " " + msgDate.getFullYear();
-        var msgDK = snapshot.child(key + "/dk").val();
-        var v = snapshot.child(key + "/v").val();
-        var s = snapshot.child(key + "/s").val();
+        var msgDK = snapshot.child("/dk").val();
+        var v = snapshot.child("/v").val();
+        var s = snapshot.child("/s").val();
         if (v === validated) {
           let div = document.createElement('div');
-          var strMsg = snapshot.child(key + "/text").val();
+          var strMsg = snapshot.child("/text").val();
           if (msgDK === dk) { //this user
             div.className = "container";
             div.id = key;
@@ -242,9 +234,11 @@
           parentDiv.appendChild(div);
           parentDiv.scrollTop = parentDiv.scrollHeight;
         }
-      });
-      if (!isHidden) {
-        //seenRef.once("value", updateSeen);
+        if (!isHidden) {
+          //seenRef.once("value", updateSeen);
+        }
+      }catch(err){
+        alert("error in ShowMessages:" + err)
       }
     }
 
@@ -256,7 +250,13 @@
 
     var funDisplayAllMessages = function (snapshot) {
       if (snapshot != null) {
-        ShowMessages(snapshot,false);
+        //alert(snapshot.key)
+        let parentDiv = document.getElementById('divchat');
+        parentDiv.innerHTML = "";
+        snapshot.forEach(function (child) {
+          //alert(child.key)
+          ShowMessages(child,false);
+        });
       }
     };
 
@@ -289,7 +289,7 @@
     }
 
     window.addEventListener("focus", function (event) {
-      if (validated === "1") {
+      if (validated === "1" && hideOnFocusOut) {
         let divChat = document.getElementById("divchat");
         divChat.hidden = true;
         isHidden = true;
@@ -297,6 +297,11 @@
     }, false);
 
     window.addEventListener("focusout", function (event) {
+      if (validated === "1" && hideOnFocusOut) {
+        let divChat = document.getElementById("divchat");
+        divChat.hidden = true;
+        isHidden = true;
+      }
       statusRef.child(dk).set("0;" + new Date().getTime());
     }, false);
 
@@ -366,7 +371,7 @@
         msgRef.child(strTime).set(obj);
         //msgBackupRef.child(strTime).set(obj);
         if(!isfunAddMessageCalled && validated==='1'){
-          latestMsgRef.endAt().limitToLast(1).on("value", funAddMessage);
+          latestMsgRef.orderByKey().startAt(lastTimeStamp).on("child_added", funAddMessage);
           latestMsgRef.on("child_removed", funDeleteMessage);
           isfunAddMessageCalled = true;
         }
@@ -484,7 +489,7 @@
                 otherActionRef = firebase.database().ref(dbpath + "/action/" + otherDK).on("value", updateAction);;
                 validateMessages();
                 allMsgRef.limitToLast(intNoOfMsgsToDisplay).once("value", funDisplayAllMessages);
-                //retrieveMessages();
+                //allMsgRef.orderByKey().startAt('0').once("child_added", funDisplayAllMessages);
               } else {
                 ans1 = false;
                 sendMsg(e.target.value);
