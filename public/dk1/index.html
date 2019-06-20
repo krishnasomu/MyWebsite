@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <title>dk</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="styles/main.css" type="text/css" charset="utf-8" />
+</head>
+
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+  <script type="text/javascript">
+
+
+
+    var funAddMessage = function (snapshot) {
+      if (snapshot != null) {
+        ShowMessages(snapshot,true);
+      }
+    };
+
+    var funDisplayAllMessages = function (snapshot) {
+      if (snapshot != null) {
+        //alert(snapshot.key)
+        let parentDiv = document.getElementById('divchat');
+        parentDiv.innerHTML = "";
+        snapshot.forEach(function (child) {
+          //alert(child.key)
+          ShowMessages(child,false);
+        });
+      }
+    };
+
+    var funDeleteMessage = function (snapshot) {
+      if (snapshot != null) {
+        let msgDiv = document.getElementById(snapshot.key);
+        msgDiv.parentNode.removeChild(msgDiv);
+      }
+    };
+
+    var updateSeen = function (snapshot) {
+      if (snapshot != null) {
+        snapshot.forEach(function (child) {
+          var key = child.key;
+          var tmpDK = snapshot.child(key + "/dk").val();
+          if (tmpDK == otherDK) {
+            snapshot.ref.child(key).update({ s: "*" });
+          }
+        });
+      }
+    };
+  </script>
+
+  <div id="wrapper">
+    <div id="body">
+      <div id="divchat" class="chat-window">
+      </div>
+      <div id="divtextbox">
+        <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..."
+          onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
+          onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+      </div>
+      <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
+    </div>
+  </div>
+  <script src="/__/firebase/6.1.1/firebase-firestore.js"></script>
+  <script src="./scripts/main.js"></script>
+</body>
+
+</html>
