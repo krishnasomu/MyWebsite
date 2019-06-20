@@ -18,6 +18,7 @@
 try{
   firebase.initializeApp({
     databaseURL: 'https://somu-website.firebaseio.com/',
+    authDomain: "somu-website.firebaseapp.com",
     apiKey: 'AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8',
     projectId: 'somu-website'
   });
@@ -89,8 +90,8 @@ var updateAction = function (snapshot) {
 // Signs-in Friendly Chat.
 window.addEventListener("focus", function (event) {
   if (validated === "1" && hideOnFocusOut) {
-    divChat.hidden = true;
-    isHidden = true;
+    //divChat.hidden = true;
+    //isHidden = true;
   }
 }, false);
 
