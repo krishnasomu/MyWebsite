@@ -297,18 +297,26 @@
     }, false);
 
     window.addEventListener("focusout", function (event) {
+      statusRef.child(dk).set("0;" + new Date().getTime());
+    }, false);
+
+
+    /*
+    document.addEventListener("visibilitychange", function (event) {
       if (validated === "1" && hideOnFocusOut) {
         let divChat = document.getElementById("divchat");
         divChat.hidden = true;
         isHidden = true;
+        if(document.hidden){
+          statusRef.child(dk).set("0;" + new Date().getTime());
+        }
       }
-      statusRef.child(dk).set("0;" + new Date().getTime());
     }, false);
+    */
 
     window.addEventListener("unload", function (event) {
       statusRef.child(dk).set("0;" + new Date().getTime());
     }, false);
-
 
     function normaliseString(str) {
       var returnStr = "";
