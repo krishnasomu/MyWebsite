@@ -142,6 +142,47 @@
     function failureFunction() {
       alrt("failed");
     }
+
+    function storeImageIntoStorage(e){
+      alert(e)
+      // 2 - Upload the image to Cloud Storage.
+      var file = e.target.files[0];
+      var filePath = firebase.auth().currentUser.uid + '/' + messageRef.id + '/' + file.name;
+      return firebase.storage().ref(filePath).put(file).then(function(fileSnapshot) {
+        // 3 - Generate a public URL for the file.
+        return fileSnapshot.ref.getDownloadURL().then((url) => {
+          // 4 - Update the chat message placeholder with the image’s URL.
+          alert(url)
+          alert(fileSnapshot.metadata.fullPath)
+        });
+      });
+    }
+
+    function saveImageMessage(file) {
+      // 1 - We add a message with a loading icon that will get updated with the shared image.
+      firebase.firestore().collection('messages').add({
+        name: getUserName(),
+        imageUrl: LOADING_IMAGE_URL,
+        profilePicUrl: getProfilePicUrl(),
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function(messageRef) {
+        // 2 - Upload the image to Cloud Storage.
+        var filePath = firebase.auth().currentUser.uid + '/' + messageRef.id + '/' + file.name;
+        return firebase.storage().ref(filePath).put(file).then(function(fileSnapshot) {
+          // 3 - Generate a public URL for the file.
+          return fileSnapshot.ref.getDownloadURL().then((url) => {
+            // 4 - Update the chat message placeholder with the image’s URL.
+            return messageRef.update({
+              imageUrl: url,
+              storageUri: fileSnapshot.metadata.fullPath
+            });
+          });
+        });
+      }).catch(function(error) {
+        console.error('There was an error uploading a file to Cloud Storage:', error);
+      });
+    }
+
   </script>
   <script>
     var validated = "0";
@@ -159,12 +200,27 @@
     var dbpath = "mydb/devilchats";
     var hideOnFocusOut = true;
 
-    // Initialize Firebase
-    var config = {
+    // Initialize Firebase (SPTZ)
+    var dbConfigSPTZ = {
+      apiKey: "AIzaSyCW68jy0NSp7YS2MEzt9uXT8CIulqx-rD0",
+      authDomain: "sptzone-website.firebaseapp.com",
+      databaseURL: "https://sptzone-website.firebaseio.com",
+      projectId: "sptzone-website",
+      storageBucket: "sptzone-website.appspot.com",
+      messagingSenderId: "250927601662",
+      appId: "1:250927601662:web:94f024de9ff0cdd5"
+    };
+
+
+    /*
+    // Initialize Firebase (Somu website)
+    var dbConfigSomuWebSite = {
       //databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
       databaseURL: 'https://somu-website.firebaseio.com/'
     };
-    firebase.initializeApp(config);
+    */
+
+    firebase.initializeApp(dbConfigSPTZ);
 
     var seenRef = null;
     var otherActionRef = null;
@@ -536,9 +592,11 @@
       <div id="divchat" class="chat-window">
       </div>
       <div id="divtextbox">
-        <textarea id="msg" rows="3" cols="55" autofocus placeholder="type here..."
+        <textarea id="msg" rows="3" cols="52" autofocus placeholder="type here..."
           onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
           onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+          <label for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onselect="storeImageIntoStorage(event)">&nbsp;^&nbsp;</label>
+          <input id="mediaCapture" type="file" accept="image/*" capture="camera" style="display: none" onselect="storeImageIntoStorage(event)">
       </div>
       <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
     </div>

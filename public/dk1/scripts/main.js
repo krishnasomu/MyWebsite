@@ -18,20 +18,26 @@ alert(1)
 try{
   firebase.initializeApp({
     databaseURL: 'https://somu-website.firebaseio.com/',
-    authDomain: "somu-website.firebaseapp.com",
     apiKey: 'AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8',
+    authDomain: "somu-website.firebaseapp.com",
     projectId: 'somu-website'
   });
 }catch(err){
   alert("error while initializing firebase");
 }
 
+try{
+  firebase.database.enableLogging(true);
+}catch(err){
+  alert("error while setting log for firebase:" + err)
+}
 // Page elements
 let divChat = document.getElementById('divchat');
 let divStatus = document.getElementById('divrectangle');
 let spanAwaySince = document.getElementById('span-away-since');
 let textMsg = document.getElementById('msg');
 
+var fsdb = firebase.firestore();
 var intNoOfMsgsToDisplay = 30;
 var validated = "0";
 var dk = "";
@@ -309,6 +315,7 @@ function isUserSignedIn() {
 // Saves a new message on the Cloud Firestore.
 function sendMsg(messageText) {
   // Add a new message entry to the Firebase database.
+<<<<<<< HEAD
   alert('inside sendmsg')
   alert(
   firebase.firestore().collection(dbRoot).add({
@@ -322,13 +329,34 @@ function sendMsg(messageText) {
   })
   )
   alert('sendmsg is finished')
+=======
+  try{
+    fsdb.collection(dbRoot).add({
+      dk: dk,
+      text: messageText,
+      time: 'abcd',
+      s: '',      
+      //time: firebase.firestore.FieldValue.serverTimestamp(),
+      v: validated
+    }).then(function(docRef) {
+      alert("Document written with ID: " + docRef.id);
+    }).catch(function(error) {
+      alert("error while inserting data:" + error)
+      console.error('Error writing new message to Firebase Database', error);
+    });
+    alert(2)
+  }catch(err){
+    alert(err)
+  }
+  alert(3)
+>>>>>>> 1f6a9b115cefc5393a1a97e5453a2bbe3a74818b
 }
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
   // Create the query to load the last "intNoOfMsgsToDisplay" messages and listen for new ones.
   try{
-    var query = firebase.firestore().collection(dbRoot).orderBy('time', 'desc').limit(intNoOfMsgsToDisplay);
+    var query = fsdb.collection(dbRoot).orderBy('time', 'desc').limit(intNoOfMsgsToDisplay);
   
     // Start listening to the query.
     query.onSnapshot(function(snapshot) {
@@ -635,7 +663,7 @@ imageButtonElement.addEventListener('click', function(e) {
 mediaCaptureElement.addEventListener('change', onMediaFileSelected);
 
 // Remove the warning about timstamps change. 
-var firestore = firebase.firestore();
+//var firestore = firebase.firestore();
 
  // TODO: Enable Firebase Performance Monitoring.
 //firebase.performance();
