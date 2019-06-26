@@ -7,26 +7,16 @@
   <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
   <style>
     #divchat {
-      bottom: 61px;
+      bottom: 85px;
       right: 0;
       position: fixed;
       z-index: 1000;
     }
 
     #divtextbox {
-      bottom: 10px;
+      bottom: 15px;
       right: 0;
       position: fixed;
-      z-index: 1000;
-    }
-
-    #divrectangle {
-      bottom: 10px;
-      right: 0px;
-      width: 408px;
-      height: 10px;
-      position: fixed;
-      background-color: black;
       z-index: 1000;
     }
 
@@ -63,7 +53,7 @@
       max-width: 60px;
       width: 100%;
       margin-right: 20px;
-      border-radius: 50%;
+      border-radius: 10%;
     }
 
     /* Style the right image */
@@ -120,6 +110,33 @@
       overflow-y: scroll;
       max-height: 50%;
     }
+
+    label{
+      display: block;
+      font-size: 12px;
+    }
+
+    textarea{
+      width: 395px;
+    }
+
+    #divrectangle {
+      bottom: 5px;
+      width: 402px;
+      height: 15px;
+      position: relative;
+      background-color: black;
+      z-index: 1000;
+    }
+
+    #divmedia {
+      bottom: 5px;
+      height: 15px;
+      position: absolute;
+      background-color: white;
+      z-index: 1000;
+    }
+
   </style>
 </head>
 
@@ -143,6 +160,10 @@
       alrt("failed");
     }
 
+    function mediaCaptureClicked(e){
+      fileSelectionPoppedUp = true;
+    }
+
     function storeImageIntoStorage(files){
       // 2 - Upload the image to Cloud Storage.
       var file = files[0];
@@ -150,7 +171,9 @@
         // 3 - Generate a public URL for the file.
         return fileSnapshot.ref.getDownloadURL().then((url) => {
           // 4 - Update the chat message placeholder with the image’s URL.
-          sendMsg('<a href="' + url + '">img</a>')
+          sendMsg('<a target="_blank" href="' + url + '"><img src="' + url + '"/></a>')
+          let textMsg = document.getElementById('msg');
+          textMsg.focus();
         });
       });
     }
@@ -167,10 +190,11 @@
     var isfunAddMessageCalled = false;
     var intNoOfMsgsToDisplay = 30;
     var lastTimeStamp = 0;
+    var fileSelectionPoppedUp = false;
 
     //Test variables
     var dbpath = "mydb/devilchats";
-    var hideOnFocusOut = false;
+    var hideOnFocusOut = true;
 
     // Initialize Firebase (SPTZ)
     var dbConfigSPTZ = {
@@ -317,10 +341,14 @@
     }
 
     window.addEventListener("focus", function (event) {
-      if (validated === "1" && hideOnFocusOut) {
-        let divChat = document.getElementById("divchat");
-        divChat.hidden = true;
-        isHidden = true;
+      if(fileSelectionPoppedUp){
+        fileSelectionPoppedUp = false;
+      }else{
+        if (validated === "1" && hideOnFocusOut) {
+          let divChat = document.getElementById("divchat");
+          divChat.hidden = true;
+          isHidden = true;
+        }
       }
     }, false);
 
@@ -567,10 +595,10 @@
         <textarea id="msg" rows="3" cols="52" autofocus placeholder="type here..."
           onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
           onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
-          <label for="mediaCapture" class="btn btn-primary btn-block btn-outlined">&nbsp;^&nbsp;</label>
-          <input id="mediaCapture" type="file" accept="image/*" capture="camera" style="display: none" onchange="storeImageIntoStorage(this.files)">
+          <input id="mediaCapture" type="file" accept="image/*;capture=camera" style="display: none" onchange="storeImageIntoStorage(this.files)">&nbsp;</input>
+          <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
+          <div id="divmedia"><label for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label></div>
       </div>
-      <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
     </div>
   </div>
 </body>
