@@ -160,10 +160,13 @@
       alrt("failed");
     }
 
+<<<<<<< HEAD
     function mediaCaptureClicked(e){
       fileSelectionPoppedUp = true;
     }
 
+=======
+>>>>>>> 22f1c788bbe88a3c06ea8956a17ee792cc553560
     function storeImageIntoStorage(files){
       // 2 - Upload the image to Cloud Storage.
       var file = files[0];
@@ -171,9 +174,13 @@
         // 3 - Generate a public URL for the file.
         return fileSnapshot.ref.getDownloadURL().then((url) => {
           // 4 - Update the chat message placeholder with the image’s URL.
+<<<<<<< HEAD
           sendMsg('<a target="_blank" href="' + url + '"><img src="' + url + '"/></a>')
           let textMsg = document.getElementById('msg');
           textMsg.focus();
+=======
+          sendMsg('<a href="' + url + '">img</a>')
+>>>>>>> 22f1c788bbe88a3c06ea8956a17ee792cc553560
         });
       });
     }
@@ -194,7 +201,7 @@
 
     //Test variables
     var dbpath = "mydb/devilchats";
-    var hideOnFocusOut = true;
+    var hideOnFocusOut = false;
 
     // Initialize Firebase (SPTZ)
     var dbConfigSPTZ = {
@@ -595,9 +602,14 @@
         <textarea id="msg" rows="3" cols="52" autofocus placeholder="type here..."
           onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
           onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+<<<<<<< HEAD
           <input id="mediaCapture" type="file" accept="image/*;capture=camera" style="display: none" onchange="storeImageIntoStorage(this.files)">&nbsp;</input>
           <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
           <div id="divmedia"><label for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label></div>
+=======
+          <label for="mediaCapture" class="btn btn-primary btn-block btn-outlined">&nbsp;^&nbsp;</label>
+          <input id="mediaCapture" type="file" accept="image/*" capture="camera" style="display: none" onchange="storeImageIntoStorage(this.files)">
+>>>>>>> 22f1c788bbe88a3c06ea8956a17ee792cc553560
       </div>
     </div>
   </div>
