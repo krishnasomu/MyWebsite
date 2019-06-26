@@ -142,6 +142,19 @@
     function failureFunction() {
       alrt("failed");
     }
+
+    function storeImageIntoStorage(files){
+      // 2 - Upload the image to Cloud Storage.
+      var file = files[0];
+      return firebase.storage().ref(file.name).put(file).then(function(fileSnapshot) {
+        // 3 - Generate a public URL for the file.
+        return fileSnapshot.ref.getDownloadURL().then((url) => {
+          // 4 - Update the chat message placeholder with the image’s URL.
+          sendMsg('<a href="' + url + '">img</a>')
+        });
+      });
+    }
+
   </script>
   <script>
     var validated = "0";
@@ -157,7 +170,7 @@
 
     //Test variables
     var dbpath = "mydb/devilchats";
-    var hideOnFocusOut = true;
+    var hideOnFocusOut = false;
 
     // Initialize Firebase (SPTZ)
     var dbConfigSPTZ = {
@@ -555,7 +568,7 @@
           onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
           onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
           <label for="mediaCapture" class="btn btn-primary btn-block btn-outlined">&nbsp;^&nbsp;</label>
-          <input id="mediaCapture" type="file" accept="image/*" capture="camera" style="display: none">
+          <input id="mediaCapture" type="file" accept="image/*" capture="camera" style="display: none" onchange="storeImageIntoStorage(this.files)">
       </div>
       <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
     </div>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 'use strict';
-
+alert(1)
 try{
   firebase.initializeApp({
     databaseURL: 'https://somu-website.firebaseio.com/',
@@ -202,21 +202,22 @@ function initFirebaseAuth() {
 }
 
 function doit_onkeypress(e) {
+  alert(e)
   try {
     if (e.keyCode == 13) {  //checks whether the pressed key is "Enter"
-      if (isHidden) {
-        if (normaliseString(e.target.value) === okey) {
-          divChat.hidden = false;
-          statusRef.child(dk).set("1");
-          divStatus.hidden = false;
-          isHidden = false;
-        } else {
-          //alert("welcome back !!!");
-        }
-        e.target.value = "";
-        e.preventDefault();
-        return;
+    if (isHidden) {
+      if (normaliseString(e.target.value) === okey) {
+        divChat.hidden = false;
+        statusRef.child(dk).set("1");
+        divStatus.hidden = false;
+        isHidden = false;
+      } else {
+        //alert("welcome back !!!");
       }
+      e.target.value = "";
+      e.preventDefault();
+      return;
+    }
       if (validated === "0") {
         if (!ans1) {
           dk = validateFirstAnswer(normaliseString(e.target.value));
@@ -263,6 +264,7 @@ function doit_onkeypress(e) {
           }
         }
       } else {
+        alert("sendmsg is being called")
         sendMsg(e.target.value);
       }
       e.target.value = "";
@@ -313,6 +315,21 @@ function isUserSignedIn() {
 // Saves a new message on the Cloud Firestore.
 function sendMsg(messageText) {
   // Add a new message entry to the Firebase database.
+<<<<<<< HEAD
+  alert('inside sendmsg')
+  alert(
+  firebase.firestore().collection(dbRoot).add({
+    dk: dk,
+    text: messageText,
+    time: firebase.firestore.FieldValue.serverTimestamp(),
+    v: validated
+  }).catch(function(error) {
+    alert('Error writing new message to Firebase Database:' + error)
+    console.error('Error writing new message to Firebase Database', error);
+  })
+  )
+  alert('sendmsg is finished')
+=======
   try{
     fsdb.collection(dbRoot).add({
       dk: dk,
@@ -332,6 +349,7 @@ function sendMsg(messageText) {
     alert(err)
   }
   alert(3)
+>>>>>>> 1f6a9b115cefc5393a1a97e5453a2bbe3a74818b
 }
 
 // Loads chat messages history and listens for upcoming ones.
