@@ -234,10 +234,14 @@
     }
 
     function removeAVWindow(){
-      let divAVChat = document.getElementById('divavchat');
-      divAVChat.hidden=true;
-      document.getElementsByTagName('body')[0].removeChild(divAVChat);
-      showVC = false;
+      try{
+        let divAVChat = document.getElementById('divavchat');
+        divAVChat.hidden=true;
+        document.getElementsByTagName('body')[0].removeChild(divAVChat);
+        showVC = false;
+      }catch(err){
+        //nothing to write
+      }
     }
 
     function storeImageIntoStorage(files){
@@ -270,7 +274,7 @@
     var showVC = false;
 
     //Test variables
-    var dbpath = "mydb/dktest";
+    var dbpath = "mydb/devilchats";
     var hideOnFocusOut = true;
 
     // Initialize Firebase (SPTZ)
