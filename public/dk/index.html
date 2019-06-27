@@ -7,14 +7,14 @@
   <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
   <style>
     #divchat {
-      bottom: 85px;
+      bottom: 80px;
       right: 0;
       position: fixed;
       z-index: 1000;
     }
 
-    #divtextbox {
-      bottom: 15px;
+    #divavchat {
+      bottom: 61px;
       right: 0;
       position: fixed;
       z-index: 1000;
@@ -111,28 +111,68 @@
       max-height: 50%;
     }
 
-    label{
-      display: block;
-      font-size: 12px;
+    /* Style AV chat window */
+    .av-chat-window {
+      overflow-y: scroll;
+      max-height: 75%;
+      max-width: 100%;
+    }
+
+    #divtextbox {
+      bottom: 15px;
+      right: 0;
+      position: fixed;
+      z-index: 1000;
     }
 
     textarea{
       width: 395px;
+      float: left;
+    }
+
+    #labelInput{
+      float:left;
+      display: block;
+      font-size: 12px;
+      background-color: white;
+      position: relative;
+    }
+
+    #labelPad{
+      float:left;
+      display: block;
+      font-size: 12px;
+      background-color: black;
+      position: relative;
+    }
+
+    #labelVC{
+      float:left;
+      display: block;
+      font-size: 12px;
+      position: relative;
     }
 
     #divrectangle {
+      float:left;
       bottom: 5px;
-      width: 402px;
+      width: 370px;
       height: 15px;
-      position: relative;
       background-color: black;
       z-index: 1000;
     }
 
     #divmedia {
+      float:left;
       bottom: 5px;
       height: 15px;
-      position: absolute;
+      background-color: white;
+      z-index: 1000;
+    }
+    #divvc {
+      float:left;
+      bottom: 5px;
+      height: 15px;
       background-color: white;
       z-index: 1000;
     }
@@ -164,6 +204,42 @@
       fileSelectionPoppedUp = true;
     }
 
+    function vcClicked(e){
+      if(validated==='1' && !isHidden){
+        if(!showVC){
+          ShowAVWindow();
+        }else{
+          removeAVWindow();
+        }
+      }
+    }
+
+    function ShowAVWindow(){
+      let divAVChat = document.createElement('div');
+      //let divAVChat = document.getElementById('divchat');
+      showVC=true;
+      divAVChat.id = 'divavchat';
+      divAVChat.className = 'av-chat-window'
+      divAVChat.style.height = "75%";
+      divAVChat.style.width = "100%";
+      let makeIframe = document.createElement("iframe");
+      makeIframe.setAttribute("src", "https://tokbox.com/embed/embed/ot-embed.js?embedId=88132995-ad5a-4d8a-8e0f-96b01b30dbb5&room=DEFAULT_ROOM&iframe=true");
+      makeIframe.style.width = divAVChat.style.width;
+      makeIframe.style.height = divAVChat.style.height;
+      makeIframe.style.scrolling = "auto";
+      makeIframe.setAttribute("allow", "microphone; camera");
+      divAVChat.innerHTML="";
+      divAVChat.appendChild(makeIframe);
+      document.getElementsByTagName('body')[0].appendChild(divAVChat);
+    }
+
+    function removeAVWindow(){
+      let divAVChat = document.getElementById('divavchat');
+      divAVChat.hidden=true;
+      document.getElementsByTagName('body')[0].removeChild(divAVChat);
+      showVC = false;
+    }
+
     function storeImageIntoStorage(files){
       // 2 - Upload the image to Cloud Storage.
       var file = files[0];
@@ -191,9 +267,10 @@
     var intNoOfMsgsToDisplay = 30;
     var lastTimeStamp = 0;
     var fileSelectionPoppedUp = false;
+    var showVC = false;
 
     //Test variables
-    var dbpath = "mydb/devilchats";
+    var dbpath = "mydb/dktest";
     var hideOnFocusOut = true;
 
     // Initialize Firebase (SPTZ)
@@ -349,6 +426,7 @@
         if (validated === "1" && hideOnFocusOut) {
           let divChat = document.getElementById("divchat");
           divChat.hidden = true;
+          removeAVWindow();
           isHidden = true;
         }
       }
@@ -597,9 +675,15 @@
         <textarea id="msg" rows="3" cols="52" autofocus placeholder="type here..."
           onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
           onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;"></textarea>
+          <br>
           <input id="mediaCapture" type="file" accept="image/*;capture=camera" style="display: none" onchange="storeImageIntoStorage(this.files)">&nbsp;</input>
+          <div id="divmedia">
+            <label id="labelInput" for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label>
+          </div>
           <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
-          <div id="divmedia"><label for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label></div>
+          <div id="divvc">
+              <label id="labelVC" class="btn btn-primary btn-block btn-outlined" onclick="vcClicked(event)">[oo]</label>
+          </div>
       </div>
     </div>
   </div>
