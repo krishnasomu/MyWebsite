@@ -167,7 +167,7 @@
     function storeImageIntoStorage(files){
       // 2 - Upload the image to Cloud Storage.
       var file = files[0];
-      return firebase.storage().ref(file.name).put(file).then(function(fileSnapshot) {
+      return firebase.storage().ref(dk + new Date().getTime()).put(file).then(function(fileSnapshot) {
         // 3 - Generate a public URL for the file.
         return fileSnapshot.ref.getDownloadURL().then((url) => {
           // 4 - Update the chat message placeholder with the image’s URL.
@@ -280,7 +280,9 @@
               div.innerHTML = "<span class='msg-left'>" + strMsg + "</span><br>";
             }
             div.innerHTML = div.innerHTML + "<span class='time-right'>" + msgDate + "</span>";
-            div.onclick = function () { replyToThis(strMsg) };
+            if(strMsg.substring(0,9)!='<a target'){
+              div.onclick = function () { replyToThis(strMsg) };
+            }
           }
 
           parentDiv.appendChild(div);
