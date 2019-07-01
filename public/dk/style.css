@@ -1,0 +1,170 @@
+#divchat {
+    bottom: 80px;
+    right: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
+#divavchat {
+    bottom: 61px;
+    right: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
+/* Chat containers */
+.container {
+    border: 2px solid #dedede;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    max-width: 379px;
+    width: 379px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin: 1px 0;
+}
+
+/* Darker chat container */
+.darker {
+    border-color: #ccc;
+    background-color: #ddd;
+}
+
+/* Clear floats */
+.container::after {
+content: "";
+    clear: both;
+    display: table;
+}
+
+/* Style images */
+.container img {
+    float: left;
+    max-width: 60px;
+    width: 100%;
+    margin-right: 20px;
+    border-radius: 10%;
+}
+
+/* Style the right image */
+.container img.right {
+    float: right;
+    margin-left: 20px;
+    margin-right: 0;
+}
+
+/* Style time text */
+.time-right {
+    float: right;
+    color: #aaa;
+    font-size: 8pt;
+}
+
+/* Style time text */
+.away-since {
+    float: right;
+    color: white;
+    font-size: 8pt;
+    margin-right: 10px;
+}
+
+/* Style time text */
+.time-left {
+    float: left;
+    color: #999;
+    font-size: 8pt;
+}
+
+.seen-symbol {
+    float: left;
+    color: red;
+    font-size: 8pt;
+}
+
+/* Style msg text */
+.msg-right {
+    float: right;
+    padding-left: 25px;
+    padding-bottom: 5px;
+}
+
+/* Style msg text */
+.msg-left {
+    float: left;
+    padding-right: 25px;
+    padding-bottom: 5px;
+}
+
+/* Style chat window */
+.chat-window {
+    overflow-y: scroll;
+    max-height: 50%;
+}
+
+/* Style AV chat window */
+.av-chat-window {
+    overflow-y: scroll;
+    max-height: 75%;
+    max-width: 100%;
+}
+
+#divtextbox {
+    bottom: 15px;
+    right: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
+textarea{
+    width: 395px;
+    float: left;
+}
+
+#labelInput{
+    float:left;
+    display: block;
+    font-size: 12px;
+    background-color: white;
+    position: relative;
+}
+
+#labelPad{
+    float:left;
+    display: block;
+    font-size: 12px;
+    background-color: black;
+    position: relative;
+}
+
+#labelVC{
+    float:left;
+    display: block;
+    font-size: 12px;
+    position: relative;
+}
+
+#divrectangle {
+    float:left;
+    bottom: 5px;
+    width: 370px;
+    height: 15px;
+    background-color: black;
+    z-index: 1000;
+}
+
+#divmedia {
+    float:left;
+    bottom: 5px;
+    height: 15px;
+    background-color: white;
+    z-index: 1000;
+}
+#divvc {
+    float:left;
+    bottom: 5px;
+    height: 15px;
+    background-color: white;
+    z-index: 1000;
+}

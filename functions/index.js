@@ -1,5 +1,9 @@
 const functions = require('firebase-functions');
 const structjson = require('./structjson.js');
+const express = require('express');
+const app = express();
+const cors = require('cors')({origin: true});
+app.use(cors);
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -67,6 +71,42 @@ exports.sendMsgToBot = functions.https.onCall((data, context) => {
       reject(err);
     }
   });
+});
+
+exports.myapp = functions.https.onRequest(app);
+
+app.get('/dk',(req, res) => {
+  res.status(200).send(`<!doctype html>
+    <head>
+      <title>dk</title>
+      <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+      <div id="wrapper">
+      <div id="body">
+        <div id="divchat" class="chat-window"></div>
+        <div id="divtextbox">
+          <textarea id="msg" rows="3" cols="52" autofocus placeholder="type here..."
+            onkeypress="Javascript:doit_onkeypress(event)" onkeyup="Javascript:doit_onkeyup(event)"
+            onkeydown="Javascript:doit_onkeydown(event)" style="border:solid 1px black;">
+          </textarea>
+          <br>
+          <input id="mediaCapture" type="file" accept="image/*;capture=camera" style="display: none" onchange="storeImageIntoStorage(this.files)">&nbsp;</input>
+          <div id="divmedia">
+            <label id="labelInput" for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label>
+          </div>
+          <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
+          <div id="divvc">
+              <label id="labelVC" class="btn btn-primary btn-block btn-outlined" onclick="vcClicked(event)">[oo]</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+  <script src="script.js"></script>
+</html>`);
 });
 
 /////// FUNCTIONS //////
