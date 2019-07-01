@@ -371,3 +371,22 @@
 [debug] [2019-07-01T14:09:37.218Z] Ephemeral server survived.
 [info] i  functions: Finished "myapp" in ~1s
 [debug] [2019-07-01T14:11:23.968Z] File C:\Users\krishna somu\Documents\GitHub\MyWebsite\functions\index.js changed, reloading triggers
+[debug] [2019-07-01T14:11:26.161Z] Functions runtime initialized.
+[debug] [2019-07-01T14:11:26.164Z] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"protect_env":true,"admin_stubs":true}
+[info] [hosting] Rewriting /test to http://localhost:5001/somu-website/us-central1/myapp for local Function myapp
+[debug] [2019-07-01T14:11:27.863Z] Accepted request GET /somu-website/us-central1/myapp/test --> myapp
+[debug] [2019-07-01T14:11:28.622Z] firebase-admin has been stubbed.
+[info] i  Your code has been provided a "firebase-admin" instance.
+[debug] [2019-07-01T14:11:28.853Z] Functions runtime initialized.
+[info] i  functions: Beginning execution of "myapp"
+[debug] [2019-07-01T14:11:28.855Z] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"protect_env":true,"admin_stubs":true}
+[debug] [2019-07-01T14:11:31.159Z] firebase-admin has been stubbed.
+[info] i  Your code has been provided a "firebase-admin" instance.
+[debug] [2019-07-01T14:11:31.443Z] Trigger "myapp" has been found, beginning invocation!
+[debug] [2019-07-01T14:11:31.443Z] 
+[debug] [2019-07-01T14:11:31.443Z] Running myapp in mode HTTPS
+[debug] [2019-07-01T14:11:31.451Z] {"socketPath":"\\\\?\\pipe\\C:\\Users\\krishna somu\\Documents\\GitHub\\MyWebsite\\functions\\9360"}
+[debug] [2019-07-01T14:11:31.452Z] [functions] Runtime ready! Sending request! {"socketPath":"\\\\?\\pipe\\C:\\Users\\krishna somu\\Documents\\GitHub\\MyWebsite\\functions\\9360"}
+[debug] [2019-07-01T14:11:31.461Z] Ephemeral server used!
+[debug] [2019-07-01T14:11:31.470Z] Ephemeral server survived.
+[info] i  functions: Finished "myapp" in ~1s
