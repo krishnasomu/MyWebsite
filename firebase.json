@@ -11,6 +11,9 @@
         "source": "/dk", "function": "myapp"
       },
       {
+        "source": "/test", "function": "myapp"
+      },
+      {
         "source": "/",
         "destination": "/index.html"
       },
