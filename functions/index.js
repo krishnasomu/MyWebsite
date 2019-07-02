@@ -130,19 +130,23 @@ app.get('/test',(req, res) => {
         messagingSenderId: "176778291160",
         appId: "1:176778291160:web:2c7d5032e6a9cc7d"
       };
-      firebase.initializeApp(dbConfigSomuWebSite);
+      firebaseApp = firebase.initializeApp(dbConfigSomuWebSite);
+      //if (process.env.NODE_ENV === 'development') {
+        firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
+      //}
       function myFunction(){
         try{
-          var funTest = firebase.functions().httpsCallable('funTest');
-          funSendSMS({"number": "919444924727", "message": "Your account is activated"}).then(function(result) {
+          var funSendSMS = firebase.functions().httpsCallable('funSendSMS');
+          funSendSMS({"number": "919444924727", "message":"Your account is activated"})
+          .then(function(result) {
             // Read result of the Cloud Function.
-            alert(result.data.resptext);
-            // ...
-          }).catch(function(error){
-            alert(error.details)
+            alert("resptext:" + result.data.resptext);
+          })
+          .catch(function(error){
+            alert("error details: " + error.details)
           });
         }catch(err){
-          alert("error:")
+          alert("error:" + err)
         }
       }
     </script>
@@ -151,12 +155,80 @@ app.get('/test',(req, res) => {
 
 /////// FUNCTIONS //////
 
-exports.funSendSMS = functions.https.onCall((data, context) => {
+  exports.funTest = functions.https.onCall((data, context) => {
+    return {resptext: "responseStatus"}
+  });
+
+  exports.funSendSMS = functions.https.onCall((data, context) => {
   //https://api.textlocal.in/send/
   //apiKey=WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz
   //message=data.message
   //numbers=date.number
-  return {resptext: "hi " + data.name}
+  try{
+    console.log("inside of funSendSMS");
+    /*
+    var request = require('request');
+    request.post({
+       url: 'https://api.textlocal.in/send/',
+        formData: {
+          message: 'how are you ?',
+          apiKey: 'WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz',
+          numbers: '919444924727'
+        },
+    }, function(error, response, body) {
+        console.log("body.status" + body.status);
+        return {resptext: body.status}
+      });
+    */
+    var https = require('https');
+    var responseStatus = '';
+    console.log("creating JSON object");
+    var jsonObject = JSON.stringify({
+      form : {
+        "message" : data.message,
+        "apiKey" : "WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz",
+        "numbers" : data.number
+      }
+    });
+    console.log("JSON Objecct: " + jsonObject);
+    console.log("Post Headers");
+    var postheaders = {
+      'Content-Type' : 'application/json',
+      'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
+    };
+    console.log("creating Post options");
+    var optionspost = {
+      host : 'api.textlocal.in',
+      path : '/send/',
+      method : 'POST',
+      headers : postheaders
+    };
+    console.log("creating request object");
+    var reqPost = https.request(optionspost, function(resSMS) {
+      console.log("statusCode: ", resSMS.statusCode);
+      // uncomment it for header details
+  //  console.log("headers: ", res.headers);
+   
+      resSMS.on('data', function(d) {
+          console.info('POST result:\n');
+          process.stdout.write(d);
+          responseStatus = d.status;
+          console.info('\n\nPOST completed');
+      });
+    });
+
+    console.info('\nCalling API');
+    reqPost.write(jsonObject);
+    console.info('\nCalled API' + reqPost.body);
+    reqPost.end();
+    reqPost.on('error', function(e) {
+        console.error(e);
+    });
+    return {resptext: responseStatus}
+  }catch(err){
+    console.log("error.details" + err);
+    return {resptext: err}
+  }
 });
 
 function test(){
