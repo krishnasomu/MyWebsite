@@ -79,7 +79,7 @@ app.get('/dk',(req, res) => {
   res.status(200).send(`<!doctype html>
     <head>
       <title>dk</title>
-      <link rel="stylesheet" href="dk/style.css">
+      <link rel="stylesheet" href="style.css">
     </head>
       <body>
       <div id="wrapper">
@@ -105,7 +105,7 @@ app.get('/dk',(req, res) => {
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
   <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
-  <script src="dk/script.js"></script>
+  <script src="script.js"></script>
 </html>`);
 });
 
@@ -119,34 +119,30 @@ app.get('/test',(req, res) => {
     </body>
     <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-functions.js"></script>
-    <script src="dk/script.js"></script>
     <script>
-        // Initialize Firebase (SPTZ)
-        var dbConfigSPTZ = {
-          apiKey: "AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8",
-          authDomain: "somu-website.firebaseapp.com",
-          databaseURL: "https://somu-website.firebaseio.com",
-          projectId: "somu-website",
-          storageBucket: "somu-website.appspot.com",
-          messagingSenderId: "176778291160",
-          appId: "1:176778291160:web:2c7d5032e6a9cc7d"
-        };
+      // Initialize Firebase (SPTZ)
+      var dbConfigSomuWebSite = {
+        apiKey: "AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8",
+        authDomain: "somu-website.firebaseapp.com",
+        databaseURL: "https://somu-website.firebaseio.com",
+        projectId: "somu-website",
+        storageBucket: "somu-website.appspot.com",
+        messagingSenderId: "176778291160",
+        appId: "1:176778291160:web:2c7d5032e6a9cc7d"
+      };
+      firebase.initializeApp(dbConfigSomuWebSite);
       function myFunction(){
         try{
-          alert(1)
           var funTest = firebase.functions().httpsCallable('funTest');
-          alert(2)
-          funTest({"name": "abcd"}).then(function(result) {
-            alert(3)
+          funSendSMS({"number": "919444924727", "message": "Your account is activated"}).then(function(result) {
             // Read result of the Cloud Function.
             alert(result.data.resptext);
             // ...
           }).catch(function(error){
             alert(error.details)
           });
-          alert(4)
         }catch(err){
-          alert(err)
+          alert("error:")
         }
       }
     </script>
@@ -155,8 +151,11 @@ app.get('/test',(req, res) => {
 
 /////// FUNCTIONS //////
 
-exports.funTest = functions.https.onCall((data, context) => {
-  console.log("im here");
+exports.funSendSMS = functions.https.onCall((data, context) => {
+  //https://api.textlocal.in/send/
+  //apiKey=WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz
+  //message=data.message
+  //numbers=date.number
   return {resptext: "hi " + data.name}
 });
 
