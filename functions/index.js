@@ -23,7 +23,7 @@ var config = {
   storageBucket: "somu-website.appspot.com",
   messagingSenderId: "176778291160"
 };
-admin.initializeApp(config);
+firebaseApp = admin.initializeApp(config);
 
 /////// HTTPS FUNCTIONS ///////
 
@@ -136,14 +136,14 @@ app.get('/test',(req, res) => {
       //}
       function myFunction(){
         try{
-          var funSendSMS = firebase.functions().httpsCallable('funSendSMS');
-          funSendSMS({"number": "919444924727", "message":"Your account is activated"})
+          var funSendTwilioSMS = firebase.functions().httpsCallable('funSendTwilioSMS');
+          funSendTwilioSMS({"number": "+919444924727", "message":"Your account is activated"})
           .then(function(result) {
             // Read result of the Cloud Function.
-            alert("resptext:" + result.data.resptext);
+            alert("resptext:" + JSON.stringify(result));
           })
           .catch(function(error){
-            alert("error details: " + error.details)
+            alert("error details: " + error)
           });
         }catch(err){
           alert("error:" + err)
@@ -159,72 +159,69 @@ app.get('/test',(req, res) => {
     return {resptext: "responseStatus"}
   });
 
-  exports.funSendSMS = functions.https.onCall((data, context) => {
+exports.funSendTwilioSMS = functions.https.onCall((data, context) => {
+  var twilio = require('twilio');
+  //var firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+  console.log(JSON.stringify(functions.config()));
+  var accountSid = "ACc8201e3d6ed559b344b3aad68abd970e" //functions.config().twilio.sid;
+  var authToken  = "13b6130aeb91fd624bb5140970db6ef1" //functions.config().token;
+  var twilioNumber = '+13524493519'
+  var client = new twilio(accountSid, authToken);    
+  const textMessage = {
+    body: data.message,
+    to: data.number,  // Text to this number
+    from: twilioNumber // From a valid Twilio number
+  };
+  client.messages.create(textMessage)
+  .then(message => console.log(message.sid, 'success'))
+  .catch(err => console.log(err))
+});
+
+exports.funSendSMS = functions.https.onCall((data, context) => {
   //https://api.textlocal.in/send/
   //apiKey=WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz
   //message=data.message
   //numbers=date.number
   try{
-    console.log("inside of funSendSMS");
-    /*
-    var request = require('request');
-    request.post({
-       url: 'https://api.textlocal.in/send/',
-        formData: {
-          message: 'how are you ?',
-          apiKey: 'WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz',
-          numbers: '919444924727'
-        },
-    }, function(error, response, body) {
-        console.log("body.status" + body.status);
-        return {resptext: body.status}
-      });
-    */
     var https = require('https');
     var responseStatus = '';
-    console.log("creating JSON object");
-    var jsonObject = JSON.stringify({
-      form : {
-        "message" : data.message,
-        "apiKey" : "WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbcz",
-        "numbers" : data.number
-      }
-    });
-    console.log("JSON Objecct: " + jsonObject);
+    var strParams = encodeURI(
+      "message=" + data.message + "&" +
+      "apiKey=WzKhDjwxk3M-rmff0KGKEXlzzWlwsCngCtVQ2XNbc&" +
+      "numbers=" + data.number
+    );
+
+    console.log("query string:" + strParams);
     console.log("Post Headers");
-    var postheaders = {
-      'Content-Type' : 'application/json',
-      'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
+
+    var optionsget = {
+      host : 'api.textlocal.in', // here only the domain name
+      path : '/send/?' + strParams, // the rest of the url with parameters if needed
+      //host : 'postman-echo.com',
+      //path : '/post/' + encodeURI(strParams),
+      // (no http/https !)
+      port : 443,
+      method : 'GET' // do GET
     };
-    console.log("creating Post options");
-    var optionspost = {
-      host : 'api.textlocal.in',
-      path : '/send/',
-      method : 'POST',
-      headers : postheaders
-    };
-    console.log("creating request object");
-    var reqPost = https.request(optionspost, function(resSMS) {
-      console.log("statusCode: ", resSMS.statusCode);
-      // uncomment it for header details
-  //  console.log("headers: ", res.headers);
+
+    var reqGet = https.request(optionsget, function(resGet) {
+      console.log("statusCode: ", resGet.statusCode);
    
-      resSMS.on('data', function(d) {
-          console.info('POST result:\n');
-          process.stdout.write(d);
-          responseStatus = d.status;
-          console.info('\n\nPOST completed');
+      resGet.on('data', function(d) {
+        console.info('GET result:\n');
+        process.stdout.write(d);
+        responseStatus = ""+d;
+        console.info('\n\nCall completed with response:' + responseStatus);
+        return responseStatus;
       });
+   
     });
 
-    console.info('\nCalling API');
-    reqPost.write(jsonObject);
-    console.info('\nCalled API' + reqPost.body);
-    reqPost.end();
-    reqPost.on('error', function(e) {
+    reqGet.end();
+    reqGet.on('error', function(e) {
         console.error(e);
     });
-    return {resptext: responseStatus}
+
   }catch(err){
     console.log("error.details" + err);
     return {resptext: err}

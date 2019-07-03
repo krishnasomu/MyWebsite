@@ -15,7 +15,8 @@
     "express": "^4.17.1",
     "firebase-admin": "^8.2.0",
     "firebase-functions": "^2.0.3",
-    "help": "^3.0.2"
+    "help": "^3.0.2",
+    "twilio": "^3.33.0"
   },
   "devDependencies": {
     "eslint": "^4.12.0",
