@@ -79,7 +79,7 @@ app.get('/dk',(req, res) => {
   res.status(200).send(`<!doctype html>
     <head>
       <title>dk</title>
-      <link rel="stylesheet" href="style.css">
+      <link rel="stylesheet" href="https://www.somu.co.in/dk/style.css">
     </head>
       <body>
       <div id="wrapper">
@@ -105,7 +105,7 @@ app.get('/dk',(req, res) => {
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
   <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
-  <script src="script.js"></script>
+  <script src="https://www.somu.co.in/dk/script.js"></script>
 </html>`);
 });
 
