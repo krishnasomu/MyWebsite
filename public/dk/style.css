@@ -145,16 +145,39 @@ textarea{
     position: relative;
 }
 
-#divrectangle {
+#labelAlert{
+    float:left;
+    display: block;
+    font-size: 12px;
+    position: relative;
+}
+
+#divrectangle1 {
     float:left;
     bottom: 5px;
-    width: 370px;
+    width: 175px;
+    height: 15px;
+    background-color: black;
+    z-index: 1000;
+}
+
+#divrectangle2 {
+    float:left;
+    bottom: 5px;
+    width: 175px;
     height: 15px;
     background-color: black;
     z-index: 1000;
 }
 
 #divmedia {
+    float:left;
+    bottom: 5px;
+    height: 15px;
+    background-color: white;
+    z-index: 1000;
+}
+#divalert {
     float:left;
     bottom: 5px;
     height: 15px;

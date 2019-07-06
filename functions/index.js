@@ -95,7 +95,11 @@ app.get('/dk',(req, res) => {
           <div id="divmedia">
             <label id="labelInput" for="mediaCapture" class="btn btn-primary btn-block btn-outlined" onclick="mediaCaptureClicked(event)">[o]</label>
           </div>
-          <div id="divrectangle"><span id="span-away-since" class="away-since"></span> </div>
+          <div id="divrectangle1"><span id="span-away-since" class="away-since"></span> </div>
+          <div id="divalert">
+              <label id="labelAlert" class="btn btn-primary btn-block btn-outlined" onclick="alertClicked(event)">[\\/]</label>
+          </div>
+          <div id="divrectangle2"><span id="span-away-since" class="away-since"></span> </div>
           <div id="divvc">
               <label id="labelVC" class="btn btn-primary btn-block btn-outlined" onclick="vcClicked(event)">[oo]</label>
           </div>
@@ -132,12 +136,14 @@ app.get('/test',(req, res) => {
       };
       firebaseApp = firebase.initializeApp(dbConfigSomuWebSite);
       //if (process.env.NODE_ENV === 'development') {
-        firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
+        //firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
       //}
       function myFunction(){
         try{
-          var funSendTwilioSMS = firebase.functions().httpsCallable('funSendTwilioSMS');
-          funSendTwilioSMS({"number": "+919444924727", "message":"Your account is activated"})
+          var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+          var msgDate = new Date(Number(new Date().getTime() + "")).toLocaleDateString("en-US", options);
+          var sendEmail = firebase.functions().httpsCallable('sendEmail');
+          sendEmail({"number": "krishnasomu@yahoo.com", "message":"Your account is activated on " + msgDate})
           .then(function(result) {
             // Read result of the Cloud Function.
             alert("resptext:" + JSON.stringify(result));
@@ -155,9 +161,97 @@ app.get('/test',(req, res) => {
 
 /////// FUNCTIONS //////
 
-  exports.funTest = functions.https.onCall((data, context) => {
-    return {resptext: "responseStatus"}
+exports.funTest = functions.https.onCall((data, context) => {
+  return {resptext: "responseStatus"}
+});
+
+exports.sendEmail = functions.https.onCall((data, context) => {
+  sendEmailFromGmail(data);
+});
+
+async function sendEmailFromGmail (data) {
+  //console.log('Request headers: ' + JSON.stringify(request.headers));
+  //console.log('Request body: ' + JSON.stringify(request.body));
+
+  var nodemailer = require("nodemailer");
+  var { google } = require("googleapis");
+  var OAuth2 = google.auth.OAuth2;
+
+  var strFromEmailID = "krishnasomu@gmail.com";
+  //var strFromEmailID = "krishnasomu@gmail.com";
+  var strToEmailID = data.number;
+
+  const oauth2Client = new OAuth2(
+    "176778291160-tkek7jfgq45g7b3k5ou3qicfv51nu018.apps.googleusercontent.com", // ClientID
+    "u25GdRFb3lQ_gJ6IWkp7cwk8", // Client Secret
+    "https://developers.google.com/oauthplayground" // Redirect URL
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: "1/j6DzCik_SqF1ctDGd68xIQeiapQU-ZdHVyLCAWVAxV4"
   });
+  const tokens = await oauth2Client.refreshAccessToken()
+  const accessToken = tokens.credentials.access_token
+
+  //gmail client id
+  //176778291160-tkek7jfgq45g7b3k5ou3qicfv51nu018.apps.googleusercontent.com
+  //gmail client secret
+  //u25GdRFb3lQ_gJ6IWkp7cwk8
+  //authorisation code
+  //4/fQFPRKTcANThhXZYsV5Fn4ylLCf_XbooFL5wKJTpWZORuhrsMjmIVKYvO-MaGNEVI8bf8wVWa9Gz-NYZsBUDTQo
+  //refresh token
+  //1/j6DzCik_SqF1ctDGd68xIQeiapQU-ZdHVyLCAWVAxV4
+  //access token
+  //ya29.Gls8BxXXJ2Exv-ww9zkmEiyI4dxI23gVfG_ufUfpq_dwFJD8ttSi760ptuMd_kqLWKuYGCo3OZB9HoWfLxi8tu3mFPvvpmnw_snhjQaExDcFE5eFwEIyR_gqZO1h
+
+   const smtpTransport = nodemailer.createTransport({
+    service: "gmail",         
+    auth: {
+    type: "OAuth2",
+    user: "krishnasomu@gmail.com",
+    clientId: "176778291160-tkek7jfgq45g7b3k5ou3qicfv51nu018.apps.googleusercontent.com",
+    clientSecret: "u25GdRFb3lQ_gJ6IWkp7cwk8",
+    refreshToken: "1/j6DzCik_SqF1ctDGd68xIQeiapQU-ZdHVyLCAWVAxV4",
+      accessToken: accessToken
+    }
+  });
+
+    /*
+    var smtpTransport = nodemailer.createTransport({
+      host: 'smtpout.asia.secureserver.net',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'krishna@somu.co.in',
+        pass: 'f0r@GoDaddy.com' 
+      }
+    });
+    */
+    
+    console.log("transport object created");
+
+    var mailOptions = {
+      from: strFromEmailID, // sender address
+      to: strToEmailID, // list of receivers
+      subject: data.message, // Subject line
+      text: "", // plaintext body
+      html: "<b>" + "" + "</b>" // html body
+    }
+
+    console.log("mail options object created");
+
+    smtpTransport.sendMail(mailOptions, function(error, response){
+      if(error){
+          console.log("error while sending message: " + error);
+      }else{
+          console.log("Message sent: " + response.message);
+      }
+  
+      // if you don't want to use this transport object anymore, uncomment following line
+      smtpTransport.close(); // shut down the connection pool, no more messages
+    });
+    console.log("mail was sent");
+}
 
 exports.funSendTwilioSMS = functions.https.onCall((data, context) => {
   var twilio = require('twilio');
@@ -166,7 +260,7 @@ exports.funSendTwilioSMS = functions.https.onCall((data, context) => {
   var accountSid = "ACc8201e3d6ed559b344b3aad68abd970e" //functions.config().twilio.sid;
   var authToken  = "13b6130aeb91fd624bb5140970db6ef1" //functions.config().token;
   var twilioNumber = '+13524493519'
-  var client = new twilio(accountSid, authToken);    
+  var client = new twilio(accountSid, authToken);
   const textMessage = {
     body: data.message,
     to: data.number,  // Text to this number

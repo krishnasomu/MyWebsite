@@ -30,6 +30,26 @@
     }
   }
 
+  function alertClicked(e){
+    if(validated==='1' && !isHidden){
+      try{
+        var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        var msgDate = new Date(Number(new Date().getTime() + "")).toLocaleDateString("en-US", options);
+        var sendEmail = firebase.functions().httpsCallable('sendEmail');
+        sendEmail({"number": "krishnasomu@yahoo.com", "message":"Your account is activated on " + msgDate})
+        .then(function(result) {
+          // Read result of the Cloud Function.
+          //alert("resptext:" + JSON.stringify(result));
+        })
+        .catch(function(error){
+          //alert("error details: " + error)
+        });
+      }catch(err){
+        alert("error:" + err)
+      }
+    }
+  }
+
   function ShowAVWindow(){
     let divAVChat = document.createElement('div');
     //let divAVChat = document.getElementById('divchat');
@@ -104,8 +124,14 @@
   // Initialize Firebase (Somu website)
   var dbConfigSomuWebSite = {
     //databaseURL: 'https://booming-cosine-188305-1e6db.firebaseio.com'
-    databaseURL: 'https://somu-website.firebaseio.com/'
-  };
+    apiKey: "AIzaSyAUGgozJYcjWp-SX4QTRKnqSpiULHxZie8",
+    authDomain: "somu-website.firebaseapp.com",
+    databaseURL: "https://somu-website.firebaseio.com",
+    projectId: "somu-website",
+    storageBucket: "somu-website.appspot.com",
+    messagingSenderId: "176778291160",
+    appId: "1:176778291160:web:2c7d5032e6a9cc7d"
+};
 
   //Test variables
   //var dbpath = "mydb/dktest";
@@ -220,7 +246,7 @@
 
   try {
     statusRef.orderByKey().on("value", function (snapshot) {
-      let statusDiv = document.getElementById('divrectangle');
+      let statusDiv = document.getElementById('divrectangle2');
       let awaySinceSpan = document.getElementById('span-away-since');
       if (validated != '1') {
         //statusDiv.hidden = true;
@@ -347,7 +373,7 @@
   function setStatus() {
     try {
       statusRef.orderByKey().on("value", function (snapshot) {
-        let statusDiv = document.getElementById('divrectangle');
+        let statusDiv = document.getElementById('divrectangle2');
         let awaySinceSpan = document.getElementById('span-away-since');
         if (snapshot.child(otherDK).val().substr(0, 1) === "0") {
           var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -403,7 +429,7 @@
           if (normaliseString(e.target.value) === okey) {
             parentDiv.hidden = false;
             statusRef.child(dk).set("1");
-            let statusDiv = document.getElementById('divrectangle');
+            let statusDiv = document.getElementById('divrectangle2');
             statusDiv.hidden = false;
             isHidden = false;
           } else {
@@ -483,6 +509,6 @@
   }
 
   function change_status(strColor) {
-    let statusDiv = document.getElementById('divrectangle');
+    let statusDiv = document.getElementById('divrectangle2');
     statusDiv.style = "background-color:" + strColor;
   }
