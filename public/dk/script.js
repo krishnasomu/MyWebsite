@@ -33,20 +33,21 @@
   function alertClicked(e){
     if(validated==='1' && !isHidden){
       try{
-        var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      let labelAlert = document.getElementById('labelAlert');
+      labelAlert.style.backgroundColor = "yellow";
+      var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
         var msgDate = new Date(Number(new Date().getTime() + "")).toLocaleDateString("en-US", options);
         var sendEmail = firebase.functions().httpsCallable('sendEmail');
         sendEmail({"number": "krishnasomu@yahoo.com", "message":"Your account is activated on " + msgDate})
         .then(function(result) {
           // Read result of the Cloud Function.
-          //alert("resptext:" + JSON.stringify(result));
         })
         .catch(function(error){
-          //alert("error details: " + error)
         });
       }catch(err){
-        alert("error:" + err)
+        //alert("error:" + err)
       }
+      labelAlert.style.backgroundColor = "white";
     }
   }
 
@@ -83,16 +84,20 @@
   function storeImageIntoStorage(files){
     // 2 - Upload the image to Cloud Storage.
     if(validated==='1' && !isHidden){
-      var file = files[0];
-      return firebase.storage().ref(dk + new Date().getTime()).put(file).then(function(fileSnapshot) {
-        // 3 - Generate a public URL for the file.
-        return fileSnapshot.ref.getDownloadURL().then((url) => {
-          // 4 - Update the chat message placeholder with the image’s URL.
-          sendMsg('<a target="_blank" href="' + url + '"><img src="' + url + '"/></a>')
-          let textMsg = document.getElementById('msg');
-          textMsg.focus();
+      try{
+        var file = files[0];
+        return firebaseApp.storage().ref(dk + new Date().getTime()).put(file).then(function(fileSnapshot) {
+          // 3 - Generate a public URL for the file.
+          return fileSnapshot.ref.getDownloadURL().then((url) => {
+            // 4 - Update the chat message placeholder with the image’s URL.
+            sendMsg('<a target="_blank" href="' + url + '"><img src="' + url + '"/></a>')
+            let textMsg = document.getElementById('msg');
+            textMsg.focus();
+          });
         });
-      });
+      }catch(err){
+        //alert("error in storeImageIntoStorage:" + err)
+      }
     }
   }
 
@@ -138,8 +143,16 @@
   var dbpath = "mydb/devilchats";
   var hideOnFocusOut = true;
 
-  //firebase.initializeApp(dbConfigSomuWebSite);
-  firebase.initializeApp(dbConfigSPTZ);
+  firebaseApp = firebase.initializeApp(dbConfigSomuWebSite);
+  //firebase.initializeApp(dbConfigSPTZ);
+
+  /*
+  try{
+    firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
+  }catch(err){
+    alert(err)
+  }
+  */
 
   var seenRef = null;
   var otherActionRef = null;
@@ -246,18 +259,22 @@
 
   try {
     statusRef.orderByKey().on("value", function (snapshot) {
-      let statusDiv = document.getElementById('divrectangle2');
+      let statusDiv1 = document.getElementById('divrectangle1');
+      let statusDiv2 = document.getElementById('divrectangle2');
       let awaySinceSpan = document.getElementById('span-away-since');
       if (validated != '1') {
-        //statusDiv.hidden = true;
+        //statusDiv1.hidden = true;
+        //statusDiv2.hidden = true;
       }
       if (snapshot.child(otherDK).val().substr(0, 1) === "0") {
         var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
         var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2, 13) + "")).toLocaleDateString("en-US", options);
         awaySinceSpan.textContent = lastLogoutTime;
-        statusDiv.style = "background-color:red";
+        statusDiv1.style = "background-color:red";
+        statusDiv2.style = "background-color:red";
       } else if (snapshot.child(otherDK).val() === "1") {
-        statusDiv.style = "background-color:green";
+        statusDiv1.style = "background-color:green";
+        statusDiv2.style = "background-color:green";
         awaySinceSpan.textContent = "";
       }
     });
@@ -373,15 +390,18 @@
   function setStatus() {
     try {
       statusRef.orderByKey().on("value", function (snapshot) {
-        let statusDiv = document.getElementById('divrectangle2');
+        let statusDiv1 = document.getElementById('divrectangle1');
+        let statusDiv2 = document.getElementById('divrectangle2');
         let awaySinceSpan = document.getElementById('span-away-since');
         if (snapshot.child(otherDK).val().substr(0, 1) === "0") {
           var options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
           var lastLogoutTime = new Date(Number(snapshot.child(otherDK).val().substr(2, 13) + "")).toLocaleDateString("en-US", options);
           awaySinceSpan.textContent = lastLogoutTime;
-          statusDiv.style = "background-color:red";
+          statusDiv1.style = "background-color:red";
+          statusDiv2.style = "background-color:red";
         } else if (snapshot.child(otherDK).val() === "1") {
-          statusDiv.style = "background-color:green";
+          statusDiv1.style = "background-color:green";
+          statusDiv2.style = "background-color:green";
           awaySinceSpan.textContent = "";
         }
       });
@@ -429,8 +449,10 @@
           if (normaliseString(e.target.value) === okey) {
             parentDiv.hidden = false;
             statusRef.child(dk).set("1");
-            let statusDiv = document.getElementById('divrectangle2');
-            statusDiv.hidden = false;
+            let statusDiv1 = document.getElementById('divrectangle1');
+            let statusDiv2 = document.getElementById('divrectangle2');
+            statusDiv1.hidden = false;
+            statusDiv2.hidden = false;
             isHidden = false;
           } else {
             //alert("welcome back !!!");
@@ -509,6 +531,8 @@
   }
 
   function change_status(strColor) {
-    let statusDiv = document.getElementById('divrectangle2');
-    statusDiv.style = "background-color:" + strColor;
+    let statusDiv1 = document.getElementById('divrectangle1');
+    let statusDiv2 = document.getElementById('divrectangle2');
+    statusDiv1.style = "background-color:" + strColor;
+    statusDiv2.style = "background-color:" + strColor;
   }

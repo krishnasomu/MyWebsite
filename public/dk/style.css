@@ -67,7 +67,8 @@ content: "";
     float: right;
     color: white;
     font-size: 8pt;
-    margin-right: 10px;
+    margin-left: 10px;
+    text-align:center;
 }
 
 /* Style time text */

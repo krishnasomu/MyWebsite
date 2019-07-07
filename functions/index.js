@@ -99,7 +99,7 @@ app.get('/dk',(req, res) => {
           <div id="divalert">
               <label id="labelAlert" class="btn btn-primary btn-block btn-outlined" onclick="alertClicked(event)">[\\/]</label>
           </div>
-          <div id="divrectangle2"><span id="span-away-since" class="away-since"></span> </div>
+          <div id="divrectangle2"></div>
           <div id="divvc">
               <label id="labelVC" class="btn btn-primary btn-block btn-outlined" onclick="vcClicked(event)">[oo]</label>
           </div>
@@ -109,6 +109,7 @@ app.get('/dk',(req, res) => {
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
   <script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase-functions.js"></script>
   <script src="https://www.somu.co.in/dk/script.js"></script>
 </html>`);
 });
@@ -136,7 +137,7 @@ app.get('/test',(req, res) => {
       };
       firebaseApp = firebase.initializeApp(dbConfigSomuWebSite);
       //if (process.env.NODE_ENV === 'development') {
-        //firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
+        firebaseApp.functions().useFunctionsEmulator('http://localhost:5001');
       //}
       function myFunction(){
         try{
@@ -173,12 +174,12 @@ async function sendEmailFromGmail (data) {
   //console.log('Request headers: ' + JSON.stringify(request.headers));
   //console.log('Request body: ' + JSON.stringify(request.body));
 
+  console.log("sendEmailFromGmail is started");
   var nodemailer = require("nodemailer");
   var { google } = require("googleapis");
   var OAuth2 = google.auth.OAuth2;
 
   var strFromEmailID = "krishnasomu@gmail.com";
-  //var strFromEmailID = "krishnasomu@gmail.com";
   var strToEmailID = data.number;
 
   const oauth2Client = new OAuth2(
@@ -187,11 +188,18 @@ async function sendEmailFromGmail (data) {
     "https://developers.google.com/oauthplayground" // Redirect URL
   );
 
+  console.log("oauth2client is set");
+
   oauth2Client.setCredentials({
     refresh_token: "1/j6DzCik_SqF1ctDGd68xIQeiapQU-ZdHVyLCAWVAxV4"
   });
+  console.log("oauth2client credentials are set");
+
   const tokens = await oauth2Client.refreshAccessToken()
+  //const tokens = await oauth2Client.getRequestHeaders();
   const accessToken = tokens.credentials.access_token
+  //const accessToken = oauth2Client.getAccessToken();
+  console.log("accessToken" + accessToken)
 
   //gmail client id
   //176778291160-tkek7jfgq45g7b3k5ou3qicfv51nu018.apps.googleusercontent.com
@@ -204,7 +212,7 @@ async function sendEmailFromGmail (data) {
   //access token
   //ya29.Gls8BxXXJ2Exv-ww9zkmEiyI4dxI23gVfG_ufUfpq_dwFJD8ttSi760ptuMd_kqLWKuYGCo3OZB9HoWfLxi8tu3mFPvvpmnw_snhjQaExDcFE5eFwEIyR_gqZO1h
 
-   const smtpTransport = nodemailer.createTransport({
+  const smtpTransport = nodemailer.createTransport({
     service: "gmail",         
     auth: {
     type: "OAuth2",
@@ -241,6 +249,8 @@ async function sendEmailFromGmail (data) {
     console.log("mail options object created");
 
     smtpTransport.sendMail(mailOptions, function(error, response){
+      console.log("sendMail response:" + response);
+      console.log("sendMail error:" + error);
       if(error){
           console.log("error while sending message: " + error);
       }else{
