@@ -81,7 +81,7 @@ app.get('/dk',(req, res) => {
       <title>dk</title>
       <link rel="stylesheet" href="https://www.somu.co.in/dk/style.css">
     </head>
-      <body>
+      <body bgcolor="black">
       <div id="wrapper">
       <div id="body">
         <div id="divchat" class="chat-window"></div>

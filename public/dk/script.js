@@ -44,7 +44,12 @@
         })
         .catch(function(error){
         });
-      }catch(err){
+        if(dk==='d'){
+          sendMsg('~~mail sent~~');
+        }
+        let textMsg = document.getElementById('msg');
+        textMsg.focus();
+  }catch(err){
         //alert("error:" + err)
       }
       labelAlert.style.backgroundColor = "white";
@@ -60,7 +65,13 @@
     divAVChat.style.height = "75%";
     divAVChat.style.width = "100%";
     let makeIframe = document.createElement("iframe");
+    
+    //the below is yahoo ID
     makeIframe.setAttribute("src", "https://tokbox.com/embed/embed/ot-embed.js?embedId=88132995-ad5a-4d8a-8e0f-96b01b30dbb5&room=DEFAULT_ROOM&iframe=true");
+    
+    //the below is Gmail ID
+    //makeIframe.setAttribute("src", "https://tokbox.com/embed/embed/ot-embed.js?embedId=88132995-ad5a-4d8a-8e0f-96b01b30dbb5&room=DEFAULT_ROOM&iframe=true");
+    
     makeIframe.style.width = divAVChat.style.width;
     makeIframe.style.height = divAVChat.style.height;
     makeIframe.style.scrolling = "auto";
